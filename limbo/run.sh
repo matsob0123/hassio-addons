@@ -1,10 +1,12 @@
 #!/bin/bash
 
-WORKDIR="${WORKDIR:-/config/limbo}"
-COMMAND="${COMMAND:-java -jar LIMBO.jar --nogui}"
+# Wczytaj opcje z JSON
+CONFIG_FILE="/data/options.json"
+WORKDIR=$(jq -r '.WORKDIR // "/config/limbo"' "$CONFIG_FILE")
+COMMAND=$(jq -r '.COMMAND // "java -jar limbo.jar --nogui"' "$CONFIG_FILE")
 
 echo "Przechodzę do katalogu: $WORKDIR"
-cd "$WORKDIR" || { echo "Nie mogę wejść do $WORKDIR"; exit 1; }
+cd "$WORKDIR" || { echo "❌ Nie mogę wejść do katalogu $WORKDIR"; exit 1; }
 
-echo "Uruchamiam komendę: $COMMAND"
+echo "▶️ Uruchamiam komendę: $COMMAND"
 exec $COMMAND
