@@ -1,8 +1,12 @@
 #!/bin/bash
 
-# Domyślne ścieżki i argumenty z env (ustawione przez Home Assistant)
+# Wyświetl przekazane wartości (debug)
+echo "Używam JAR_PATH: $JAR_PATH"
+echo "Używam ARGS: $ARGS"
+
+# Domyślne wartości, jeśli nie ustawione
 JAR_PATH="${JAR_PATH:-/config/limbo/LIMBO.jar}"
 ARGS="${ARGS:---nogui}"
 
-echo "Uruchamiam LIMBO.jar: $JAR_PATH z argumentami: $ARGS"
+# Uruchom
 exec java -jar "$JAR_PATH" $ARGS

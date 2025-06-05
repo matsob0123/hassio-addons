@@ -9,13 +9,13 @@ privileged:
   - NET_ADMIN
   - SYS_ADMIN
 options:
-  args: "--nogui"          # argumenty do uruchomienia JAR
-  jar_path: "/config/limbo/LIMBO.jar"   # ścieżka do JAR na hoście (do mapowania)
-  config_dir: "/config/limbo/config"    # folder z configiem
+  ARGS: "--nogui"          # argumenty do uruchomienia JAR
+  JAR_PATH: "/config/limbo/LIMBO.jar"   # ścieżka do JAR na hoście (do mapowania)
+  CONFIG_DIR: "/config/limbo/config"    # folder z configiem
 schema:
-  args: str
-  jar_path: str
-  config_dir: str
+  ARGS: str
+  JAR_PATH: str
+  CONFIG_DIR: str
 arch:
   - amd64
   - aarch64
