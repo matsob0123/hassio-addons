@@ -1,9 +1,14 @@
-FROM openjdk:17-jdk-slim
+# Bazowy obraz z OpenJDK 21
+FROM eclipse-temurin:21-jdk
 
-RUN apt-get update && apt-get install -y tini jq && rm -rf /var/lib/apt/lists/*
+# Instalacja narzędzi
+RUN apt-get update && apt-get install -y jq bash && rm -rf /var/lib/apt/lists/*
 
+# Dodanie skryptu startowego
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
-ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
+# Domyślny katalog
+WORKDIR /opt
+
 CMD ["/run.sh"]

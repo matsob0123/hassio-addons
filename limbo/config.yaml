@@ -1,16 +1,17 @@
 name: "LIMBO Server"
-version: "1.9"
+version: "2.0"
 slug: "limbo_server"
 description: "Dodatek do uruchamiania serwera z własną komendą Java"
 startup: services
 boot: auto
 host_network: true
+stdin: true
 privileged:
   - NET_ADMIN
   - SYS_ADMIN
 options:
-  WORKDIR: "/config/limbo"         # Katalog, gdzie uruchomić polecenie
-  COMMAND: "java -jar limbo.jar --nogui"  # Pełna komenda
+  WORKDIR: "/config/limbo"
+  COMMAND: "java -jar limbo.jar --nogui"
 schema:
   WORKDIR: str
   COMMAND: str
