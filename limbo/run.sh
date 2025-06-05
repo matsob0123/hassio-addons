@@ -17,4 +17,3 @@ $COMMAND
 EXITCODE=$?
 
 echo "❗ Proces zakończył się z kodem $EXITCODE"
-sleep 3600
