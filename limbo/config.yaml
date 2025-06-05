@@ -1,5 +1,5 @@
 name: "LIMBO Server"
-version: "1.0"
+version: "1.1"
 slug: "limbo_server"
 description: "Uruchamia LIMBO.jar z konfigurowalnymi argumentami i dostępem do plików"
 startup: services

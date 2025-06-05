@@ -1,9 +1,8 @@
-FROM openjdk:17-jdk-slim
+#!/bin/bash
 
-RUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
+# Domyślne ścieżki i argumenty z env (ustawione przez Home Assistant)
+JAR_PATH="${JAR_PATH:-/config/limbo/LIMBO.jar}"
+ARGS="${ARGS:---nogui}"
 
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
-
-ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["/run.sh"]
+echo "Uruchamiam LIMBO.jar: $JAR_PATH z argumentami: $ARGS"
+exec java -jar "$JAR_PATH" $ARGS
