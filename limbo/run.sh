@@ -1,12 +1,7 @@
 #!/bin/bash
 
-# Wyświetl przekazane wartości (debug)
-echo "Używam JAR_PATH: $JAR_PATH"
-echo "Używam ARGS: $ARGS"
+echo "Przechodzę do katalogu: $WORKDIR"
+cd "$WORKDIR" || { echo "Nie mogę wejść do $WORKDIR"; exit 1; }
 
-# Domyślne wartości, jeśli nie ustawione
-JAR_PATH="${JAR_PATH:-/config/limbo/LIMBO.jar}"
-ARGS="${ARGS:---nogui}"
-
-# Uruchom
-exec java -jar "$JAR_PATH" $ARGS
+echo "Uruchamiam komendę: $COMMAND"
+exec $COMMAND

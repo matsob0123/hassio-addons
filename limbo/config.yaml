@@ -1,7 +1,7 @@
 name: "LIMBO Server"
-version: "1.3"
+version: "1.4"
 slug: "limbo_server"
-description: "Uruchamia LIMBO.jar z konfigurowalnymi argumentami i dostępem do plików"
+description: "Dodatek do uruchamiania serwera z własną komendą Java"
 startup: services
 boot: auto
 host_network: true
@@ -9,13 +9,11 @@ privileged:
   - NET_ADMIN
   - SYS_ADMIN
 options:
-  ARGS: "--nogui"          # argumenty do uruchomienia JAR
-  JAR_PATH: "/config/limbo/limbo.jar"   # ścieżka do JAR na hoście (do mapowania)
-  CONFIG_DIR: "/config/limbo"    # folder z configiem
+  WORKDIR: "/config/limbo"         # Katalog, gdzie uruchomić polecenie
+  COMMAND: "java -jar limbo.jar --nogui"  # Pełna komenda
 schema:
-  ARGS: str
-  JAR_PATH: str
-  CONFIG_DIR: str
+  WORKDIR: str
+  COMMAND: str
 arch:
   - amd64
   - aarch64
