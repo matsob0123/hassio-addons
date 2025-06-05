@@ -1,5 +1,5 @@
 name: "LIMBO Server"
-version: "1.4"
+version: "1.5"
 slug: "limbo_server"
 description: "Dodatek do uruchamiania serwera z własną komendą Java"
 startup: services
