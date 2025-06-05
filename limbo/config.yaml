@@ -1,0 +1,22 @@
+name: "LIMBO Server"
+version: "1.0"
+slug: "limbo_server"
+description: "Uruchamia LIMBO.jar z konfigurowalnymi argumentami i dostępem do plików"
+startup: services
+boot: auto
+host_network: true
+privileged:
+  - NET_ADMIN
+  - SYS_ADMIN
+options:
+  args: "--nogui"          # argumenty do uruchomienia JAR
+  jar_path: "/config/limbo/LIMBO.jar"   # ścieżka do JAR na hoście (do mapowania)
+  config_dir: "/config/limbo/config"    # folder z configiem
+schema:
+  args: str
+  jar_path: str
+  config_dir: str
+arch:
+  - amd64
+  - aarch64
+  - armv7
