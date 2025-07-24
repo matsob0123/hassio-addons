@@ -1,5 +1,5 @@
 name: "Eclipse Temurin JDK 21"
-version: "1.5"
+version: "1.51"
 slug: "temurin_21"
 description: "Addon that contains Temurin 21 with example.jar support"
 startup: services
