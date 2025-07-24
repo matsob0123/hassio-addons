@@ -1,7 +1,7 @@
-name: "LIMBO Server"
+name: "Java Runner"
 version: "1.1"
-slug: "limbo_server"
-description: "Dodatek do uruchamiania serwera z własną komendą Java"
+slug: "Java_Runner"
+description: "Java server."
 startup: services
 boot: auto
 host_network: true
@@ -12,9 +12,11 @@ privileged:
 options:
   WORKDIR: "/config/limbo"
   COMMAND: "java -jar limbo.jar --nogui"
+  JAVA_VERSION: "21" # <--- New option for Java version
 schema:
   WORKDIR: str
   COMMAND: str
+  JAVA_VERSION: str # <--- Schema for the new option
 arch:
   - amd64
   - aarch64

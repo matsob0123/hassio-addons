@@ -1,5 +1,6 @@
-# Bazowy obraz z OpenJDK 21
-FROM eclipse-temurin:21-jdk
+# Bazowy obraz z OpenJDK, wersja dostarczana jako build-arg
+ARG JAVA_VERSION=21
+FROM eclipse-temurin:${JAVA_VERSION}-jdk
 
 # Instalacja narzędzi
 RUN apt-get update && apt-get install -y jq bash && rm -rf /var/lib/apt/lists/*
