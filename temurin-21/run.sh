@@ -1,19 +1,25 @@
 #!/bin/bash
 set -e
-set -x # Włącz debug
 
 CONFIG_FILE="/data/options.json"
-WORKDIR=$(jq -r '.WORKDIR // "/config/limbo"' "$CONFIG_FILE")
-COMMAND=$(jq -r '.COMMAND // "java -jar limbo.jar --nogui"' "$CONFIG_FILE")
+WORKDIR=$(jq -r '.WORKDIR // "/config/temurin-21"' "$CONFIG_FILE")
+COMMAND=$(jq -r '.COMMAND // "java -jar test.jar --nogui"' "$CONFIG_FILE")
 
-echo "Przechodzę do katalogu: $WORKDIR"
+echo "📁 Changing to working directory: $WORKDIR"
+
+# Create the directory if it doesn't exist
+if [ ! -d "$WORKDIR" ]; then
+  echo "📂 Directory $WORKDIR does not exist. Creating..."
+  mkdir -p "$WORKDIR"
+fi
+
 if ! cd "$WORKDIR"; then
-  echo "❌ Nie mogę wejść do katalogu $WORKDIR"
+  echo "❌ Failed to change to directory $WORKDIR"
   exit 1
 fi
 
-echo "▶️ Uruchamiam komendę: $COMMAND"
+echo "▶️ Running command: $COMMAND"
 $COMMAND
 EXITCODE=$?
 
-echo "❗ Proces zakończył się z kodem $EXITCODE"
+echo "❗ Process exited with code $EXITCODE"
