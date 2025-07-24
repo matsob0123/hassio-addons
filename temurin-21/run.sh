@@ -34,6 +34,17 @@ cd "$WORKDIR" || {
 log "Listing /share directory content:"
 ls -l /share || log "Cannot list /share directory"
 
+log "Listing $WORKDIR directory content:"
+ls -l "$WORKDIR" || log "Cannot list $WORKDIR directory"
+
+log "Displaying text files in $WORKDIR:"
+# Znajdź pliki tekstowe i wyświetl ich zawartość (do 5 plików max, każdy do 1kB max)
+TEXTFILES=$(find . -maxdepth 1 -type f \( -name '*.txt' -o -name '*.json' -o -name '*.log' \) | head -n 5)
+for f in $TEXTFILES; do
+  log "File: $f content:"
+  head -c 1024 "$f" || log "Failed to read $f"
+done
+
 JARFILE=$(echo "$COMMAND" | grep -oE 'java -jar ([^ ]+)' | awk '{print $3}')
 if [ -z "$JARFILE" ]; then
   JARFILE="example.jar"
