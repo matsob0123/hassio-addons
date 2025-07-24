@@ -1,9 +1,21 @@
-# Bazowy obraz z OpenJDK, wersja dostarczana jako build-arg
-ARG JAVA_VERSION=21
-FROM eclipse-temurin:${JAVA_VERSION}-jdk
+# Bazowy obraz z Ubuntu, aby mieć apt do instalacji Javy
+FROM ubuntu:22.04
 
-# Instalacja narzędzi
-RUN apt-get update && apt-get install -y jq bash && rm -rf /var/lib/apt/lists/*
+# Ustawienie zmiennych środowiskowych, aby apt-get nie pytał o interakcję
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instalacja narzędzi: wget (do pobierania), apt-transport-https (do repozytoriów HTTPS),
+# ca-certificates (do weryfikacji certyfikatów), gnupg (do kluczy GPG), jq (do parsowania JSON), bash
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    wget \
+    apt-transport-https \
+    ca-certificates \
+    gnupg \
+    jq \
+    bash \
+    openjdk-21-jdk-headless \ # Zainstalujemy domyślnie jedną wersję, resztę dynamicznie
+    && rm -rf /var/lib/apt/lists/*
 
 # Dodanie skryptu startowego
 COPY run.sh /run.sh

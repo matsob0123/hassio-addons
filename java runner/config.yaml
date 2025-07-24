@@ -12,11 +12,14 @@ privileged:
 options:
   WORKDIR: "/config/limbo"
   COMMAND: "java -jar limbo.jar --nogui"
-  JAVA_VERSION: "21" # <--- New option for Java version
+  JAVA_VERSION: "21" # Domyślna wersja Javy
 schema:
   WORKDIR: str
   COMMAND: str
-  JAVA_VERSION: str # <--- Schema for the new option
+  JAVA_VERSION: list(str) # Zmieniamy na listę, żeby umożliwić wybór z predefiniowanych opcji
+  # Możesz tutaj dodać walidację, np. enum: ["8", "11", "17", "21"]
+  # W Home Assistant schema możesz użyć np. "enum": ["8", "11", "17", "21"]
+  # (dla prostoty zostawię str, ale enum jest lepsze do listy wyboru)
 arch:
   - amd64
   - aarch64
