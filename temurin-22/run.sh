@@ -12,7 +12,7 @@ if [ "$DEBUG" = "true" ]; then
   set -x
 fi
 
-log "Reading config from $CONFIG_FILE"
+log "📖 Reading config from $CONFIG_FILE"
 cat "$CONFIG_FILE"
 
 WORKDIR=$(jq -r '.WORKDIR // "/share/temurin-22"' "$CONFIG_FILE")
@@ -34,43 +34,43 @@ cd "$WORKDIR" || {
 log "📂 Listing contents of $WORKDIR:"
 ls -la
 
-# Extract jar filename from command
+# Extract jar filename from command (e.g. example.jar)
 JARFILE=$(echo "$COMMAND" | grep -oE 'java -jar ([^ ]+)' | awk '{print $3}')
 JARFILE=${JARFILE:-example.jar}
 
-SRC_JAR="/opt/$JARFILE"
+# Check in /opt/app first
+SRC_JAR="/opt/app/$JARFILE"
 DST_JAR="$WORKDIR/$JARFILE"
 
-# Only copy if source exists
 if [ -f "$SRC_JAR" ]; then
   if [ ! -f "$DST_JAR" ]; then
     log "📥 Copying $JARFILE to $WORKDIR (not found)"
     cp "$SRC_JAR" "$DST_JAR"
   elif [ "$SRC_JAR" -nt "$DST_JAR" ]; then
-    log "📤 Found newer $JARFILE in /opt, updating..."
+    log "📤 Found newer $JARFILE in /opt/app, updating..."
     cp "$SRC_JAR" "$DST_JAR"
   else
     log "✅ $JARFILE is up-to-date."
   fi
 else
-  log "ℹ️ No built-in $SRC_JAR found (this is OK if provided manually)."
+  log "ℹ️ No built-in /opt/app/$JARFILE found (skipping copy)"
 fi
 
-# Final check
+# Final check in WORKDIR
 if [ ! -f "$DST_JAR" ]; then
   log "❌ Error: $JARFILE not found in $WORKDIR"
   exit 2
 fi
 
-# Optional: Check if jar is valid
+# Optional: Check if JAR is valid zip structure
 if ! unzip -l "$DST_JAR" >/dev/null 2>&1; then
-  log "❌ Error: $JARFILE appears to be corrupted or invalid JAR!"
+  log "❌ Error: $JARFILE appears to be corrupted or not a valid JAR!"
   exit 3
 fi
 
 log "▶️ Running command: $COMMAND"
 
-# Handle optional stop command
+# Setup trap to handle stop command (if any)
 cleanup() {
   if [ -n "$STOP_COMMAND" ]; then
     log "🛑 Sending stop command: $STOP_COMMAND"
@@ -80,7 +80,7 @@ cleanup() {
 }
 trap cleanup SIGTERM SIGINT
 
-# Run the Java command directly, letting it use stdin normally
+# Run the server
 bash -c "$COMMAND"
 EXITCODE=$?
 
