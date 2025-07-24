@@ -11,7 +11,7 @@ privileged:
   - SYS_ADMIN
 options:
   WORKDIR: "/share/temurin-21"
-  COMMAND: "java -jar test.jar --nogui"
+  COMMAND: "java -jar example.jar --nogui"
 schema:
   WORKDIR: str
   COMMAND: str

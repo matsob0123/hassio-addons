@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y jq bash && rm -rf /var/lib/apt/lists/*
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
-# Copy the Java application (optional, or remove if mounted from host)
-COPY test.jar /share/temurin-21/test.jar
+# Copy the Java application
+COPY example.jar /share/temurin-21/example.jar
 
 # Default working directory
 WORKDIR /opt
