@@ -30,18 +30,8 @@ cd "$WORKDIR" || {
   exit 1
 }
 
-log "Listing /share directory content:"
-ls -l /share || log "Cannot list /share directory"
-
 log "Listing $WORKDIR directory content:"
-ls -l "$WORKDIR" || log "Cannot list $WORKDIR directory"
-
-log "Displaying text files in $WORKDIR:"
-TEXTFILES=$(find . -maxdepth 1 -type f \( -name '*.txt' -o -name '*.json' -o -name '*.log' \) | head -n 5)
-for f in $TEXTFILES; do
-  log "File: $f content:"
-  head -c 1024 "$f" || log "Failed to read $f"
-done
+ls -l "$WORKDIR"
 
 # Extract .jar file from command
 JARFILE=$(echo "$COMMAND" | grep -oE 'java -jar ([^ ]+)' | awk '{print $3}')
@@ -49,17 +39,25 @@ if [ -z "$JARFILE" ]; then
   JARFILE="example.jar"
 fi
 
-# Attempt to copy JAR from /opt (inside container) if missing in $WORKDIR
-if [ ! -f "$JARFILE" ]; then
-  if [ -f "/opt/$JARFILE" ]; then
-    log "Jar file '$JARFILE' not found in $WORKDIR. Copying from /opt/$JARFILE..."
-    cp "/opt/$JARFILE" "$JARFILE"
-  fi
-fi
+SRC_JAR="/opt/$JARFILE"
+DST_JAR="$WORKDIR/$JARFILE"
 
-if [ ! -f "$JARFILE" ]; then
-  log "Error: Jar file '$JARFILE' not found in $WORKDIR"
-  exit 2
+# Copy only if source is newer
+if [ -f "$SRC_JAR" ]; then
+  if [ ! -f "$DST_JAR" ]; then
+    log "Jar file not found in $WORKDIR. Copying from image..."
+    cp "$SRC_JAR" "$DST_JAR"
+  elif [ "$SRC_JAR" -nt "$DST_JAR" ]; then
+    log "A newer version of $JARFILE was found in the image. Updating..."
+    cp "$SRC_JAR" "$DST_JAR"
+  else
+    log "Jar file exists and is up-to-date."
+  fi
+else
+  if [ ! -f "$DST_JAR" ]; then
+    log "Error: Jar file '$JARFILE' not found anywhere."
+    exit 2
+  fi
 fi
 
 log "Running command: $COMMAND"
