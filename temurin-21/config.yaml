@@ -1,5 +1,5 @@
 name: "Eclipse Temurin JDK 21"
-version: "1.11"
+version: "1.12"
 slug: "temurin_21"
 description: "Addon that contains Temurin 21"
 startup: services
@@ -10,8 +10,8 @@ privileged:
   - NET_ADMIN
   - SYS_ADMIN
 options:
-  WORKDIR: "/config/temurin-21"
-  COMMAND: "java -jar example.jar --nogui"
+  WORKDIR: "/share/temurin-21"
+  COMMAND: "java -jar test.jar --nogui"
 schema:
   WORKDIR: str
   COMMAND: str
@@ -20,4 +20,4 @@ arch:
   - aarch64
   - armv7
 map:
-  - config:rw
+  - share:rw
