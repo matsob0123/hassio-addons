@@ -1,0 +1,23 @@
+name: "Java Eclipse-Temurin 21"
+version: "1.1"
+slug: "Temurin-21"
+description: "Addon with OPENJDK 21"
+startup: services
+boot: auto
+host_network: true
+stdin: true
+privileged:
+  - NET_ADMIN
+  - SYS_ADMIN
+options:
+  WORKDIR: "/config/limbo"
+  COMMAND: "java -jar limbo.jar --nogui"
+schema:
+  WORKDIR: str
+  COMMAND: str
+arch:
+  - amd64
+  - aarch64
+  - armv7
+map:
+  - config:rw
