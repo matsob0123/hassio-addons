@@ -6,7 +6,6 @@ log() {
 }
 
 CONFIG_FILE="/data/options.json"
-
 DEBUG=$(jq -r '.DEBUG // false' "$CONFIG_FILE")
 
 if [ "$DEBUG" = "true" ]; then
@@ -38,16 +37,24 @@ log "Listing $WORKDIR directory content:"
 ls -l "$WORKDIR" || log "Cannot list $WORKDIR directory"
 
 log "Displaying text files in $WORKDIR:"
-# Znajdź pliki tekstowe i wyświetl ich zawartość (do 5 plików max, każdy do 1kB max)
 TEXTFILES=$(find . -maxdepth 1 -type f \( -name '*.txt' -o -name '*.json' -o -name '*.log' \) | head -n 5)
 for f in $TEXTFILES; do
   log "File: $f content:"
   head -c 1024 "$f" || log "Failed to read $f"
 done
 
+# Extract .jar file from command
 JARFILE=$(echo "$COMMAND" | grep -oE 'java -jar ([^ ]+)' | awk '{print $3}')
 if [ -z "$JARFILE" ]; then
   JARFILE="example.jar"
+fi
+
+# Attempt to copy JAR from /opt (inside container) if missing in $WORKDIR
+if [ ! -f "$JARFILE" ]; then
+  if [ -f "/opt/$JARFILE" ]; then
+    log "Jar file '$JARFILE' not found in $WORKDIR. Copying from /opt/$JARFILE..."
+    cp "/opt/$JARFILE" "$JARFILE"
+  fi
 fi
 
 if [ ! -f "$JARFILE" ]; then
@@ -57,7 +64,6 @@ fi
 
 log "Running command: $COMMAND"
 
-# Wyłącz set -x przed uruchomieniem aby nie pokazywał komend programu java
 if [ "$DEBUG" = "true" ]; then
   set +x
 fi
