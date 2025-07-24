@@ -1,7 +1,7 @@
-name: "Java Runner"
-version: "1.1"
-slug: "Java_Runner"
-description: "Java server."
+name: "Eclipse Temurin JDK 21"
+version: "1.0"
+slug: "temurin_21"
+description: "Addon that contains temurin 21"
 startup: services
 boot: auto
 host_network: true
@@ -10,8 +10,8 @@ privileged:
   - NET_ADMIN
   - SYS_ADMIN
 options:
-  WORKDIR: "/config/limbo"
-  COMMAND: "java -jar limbo.jar --nogui"
+  WORKDIR: "/config/temurin21"
+  COMMAND: "java -jar test.jar --nogui"
 schema:
   WORKDIR: str
   COMMAND: str
