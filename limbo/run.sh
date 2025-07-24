@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-set -x  # Włącz debug
+set -x # Włącz debug
 
 CONFIG_FILE="/data/options.json"
 WORKDIR=$(jq -r '.WORKDIR // "/config/limbo"' "$CONFIG_FILE")

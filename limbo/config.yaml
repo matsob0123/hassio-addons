@@ -1,8 +1,7 @@
-name: "LIMBO Server"
+name: "Java Runner"
 version: "1.1"
-slug: "limbo_server"
-description: "Dodatek do uruchamiania serwera z własną komendą Java"
->>>>>>>> parent of 20e317b (add java runner instead of limbo):limbo/config.yaml
+slug: "Java_Runner"
+description: "Java server."
 startup: services
 boot: auto
 host_network: true
