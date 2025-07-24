@@ -14,6 +14,10 @@ RUN chmod +x /run.sh
 # Default directory
 WORKDIR /opt
 
+<<<<<<<< HEAD:temurin-21/Dockerfile
 # Uruchom skrypt startowy
 # Run the startup script
 CMD ["/run.sh"]
+========
+CMD ["/run.sh"]
+>>>>>>>> parent of 20e317b (add java runner instead of limbo):limbo/Dockerfile

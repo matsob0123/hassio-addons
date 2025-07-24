@@ -1,7 +1,14 @@
+<<<<<<<< HEAD:temurin-21/config.yaml
 name: "Java Eclipse-Temurin 21"
 version: "1.1"
 slug: "Temurin-21"
 description: "Addon with OPENJDK 21"
+========
+name: "LIMBO Server"
+version: "1.1"
+slug: "limbo_server"
+description: "Dodatek do uruchamiania serwera z własną komendą Java"
+>>>>>>>> parent of 20e317b (add java runner instead of limbo):limbo/config.yaml
 startup: services
 boot: auto
 host_network: true
