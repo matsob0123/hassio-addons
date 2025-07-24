@@ -1,0 +1,25 @@
+name: "Eclipse Temurin JDK 24"
+version: "1.141"
+slug: "temurin_23"
+description: "Addon that contains Temurin 24"
+startup: services
+boot: auto
+host_network: true
+stdin: true
+privileged:
+  - NET_ADMIN
+  - SYS_ADMIN
+options:
+  WORKDIR: "/share/temurin-24
+  COMMAND: "java -jar example.jar --nogui"
+  DEBUG: false
+schema:
+  WORKDIR: str
+  COMMAND: str
+  DEBUG: bool
+arch:
+  - amd64
+  - aarch64
+  - armv7
+map:
+  - share:rw
