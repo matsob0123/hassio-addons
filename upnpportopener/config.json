@@ -1,6 +1,6 @@
 {
   "name": "UPnP Port Forwarding",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "slug": "upnp_portforward",
   "description": "Addon do przekierowywania portów przez UPnP za pomocą miniupnpc",
   "arch": ["amd64", "armv7", "aarch64"],
