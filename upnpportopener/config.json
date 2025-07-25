@@ -1,0 +1,23 @@
+{
+  "name": "UPnP Port Forwarding",
+  "version": "1.0.0",
+  "slug": "upnp_portforward",
+  "description": "Addon do przekierowywania portów przez UPnP za pomocą miniupnpc",
+  "arch": ["amd64", "armv7", "aarch64"],
+  "startup": "application",
+  "boot": "auto",
+  "host_network": true,
+  "privileged": ["NET_ADMIN"],
+  "options": {
+    "external_port": 25565,
+    "internal_port": 25565,
+    "protocol": "TCP",
+    "description": "Minecraft Server"
+  },
+  "schema": {
+    "external_port": "int",
+    "internal_port": "int",
+    "protocol": "str",
+    "description": "str"
+  }
+}
