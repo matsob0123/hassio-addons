@@ -1,13 +1,27 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
+# Wersja bazowa
+FROM alpine:3.18
 
-FROM $BUILD_FROM
+# Pobierz i rozpakuj s6-overlay (wersja amd64)
+ADD https://github.com/just-containers/s6-overlay/releases/download/v2.2.0.3/s6-overlay-amd64.tar.gz /tmp/
 
-RUN apk add --no-cache build-base python3-dev py3-pip miniupnpc-dev
+RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / \
+    && rm /tmp/s6-overlay-amd64.tar.gz
 
-# utwórz i aktywuj wirtualne środowisko, zainstaluj pakiet Pythonowy
-RUN python3 -m venv /venv \
-  && /venv/bin/pip install --no-cache-dir miniupnpc
+# Instalacja pakietów systemowych i python z miniupnpc
+RUN apk add --no-cache \
+    build-base \
+    python3 \
+    python3-dev \
+    py3-pip \
+    miniupnpc-dev \
+    bash \
+    && pip3 install --no-cache-dir miniupnpc
 
-COPY run.py /run.py
+# Kopiowanie plików s6 service (jeśli masz jakieś) do katalogu usług s6 (opcjonalnie)
+# COPY ./services/ /etc/services.d/
 
-CMD ["/venv/bin/python", "/run.py"]
+# Ustaw s6-overlay jako entrypoint - musi być PID 1
+ENTRYPOINT ["/init"]
+
+# Domyślna komenda, możesz zmienić na swój program
+CMD ["bash"]
