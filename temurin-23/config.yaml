@@ -1,0 +1,26 @@
+name: "Eclipse Temurin JDK 23"
+version: "1.52"
+slug: "temurin_23"
+description: "Addon that contains Temurin 23 with example.jar support"
+startup: services
+boot: auto
+host_network: true
+stdin: true
+privileged:
+  - NET_ADMIN
+  - SYS_ADMIN
+options:
+  WORKDIR: "/share/temurin-23"
+  COMMAND: "java -jar example.jar --nogui"
+  DEBUG: true
+  STOP_COMMAND: "stop"
+schema:
+  WORKDIR: str
+  COMMAND: str
+  STOP_COMMAND: str?
+arch:
+  - amd64
+  - aarch64
+  - armv7
+map:
+  - share:rw
