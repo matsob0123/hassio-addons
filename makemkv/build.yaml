@@ -1,7 +1,0 @@
-# /config/addons/makemkv_builder/build.yaml
-build_from:
-  aarch64: "jlesage/makemkv:latest"
-  amd64: "jlesage/makemkv:latest"
-  armhf: "jlesage/makemkv:latest"
-  armv7: "jlesage/makemkv:latest"
-  i386: "jlesage/makemkv:latest"
