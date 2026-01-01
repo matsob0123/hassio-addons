@@ -1,6 +1,6 @@
 name: "piSignage Server"
-description: "Professional Digital Signage. PORT TO HASSOS BY matsob0123. RPi5 Edition."
-version: "2.0.3"
+description: "Professional Digital Signage – Full HA Add-on Port"
+version: "3.0.0"
 slug: "pisignage_server"
 url: "https://github.com/colloqi/pisignage-server"
 
@@ -14,7 +14,7 @@ init: false
 ingress: true
 ingress_port: 3000
 
-panel_icon: "mdi:television-shimmer"
+panel_icon: "mdi:television-play"
 panel_title: "piSignage"
 
 map:
@@ -25,12 +25,20 @@ map:
 ports:
   3000/tcp: 3000
 
+watchdog: http://[HOST]:3000/api/status
+
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   mongo_db_path: str
   media_storage: list(share|local)
+  node_env: list(production|development)
+  enable_healthcheck: bool
+  restart_on_fail: bool
 
 options:
   log_level: info
   mongo_db_path: /data/db
   media_storage: share
+  node_env: production
+  enable_healthcheck: true
+  restart_on_fail: true

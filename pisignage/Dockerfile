@@ -2,11 +2,10 @@ ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
 ENV LANG=C.UTF-8 \
-    DEBIAN_FRONTEND=noninteractive \
     NODE_ENV=production
 
-# --- System ---
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# --- System (ALPINE!) ---
+RUN apk add --no-cache \
     bash \
     curl \
     git \
@@ -14,32 +13,30 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     imagemagick \
     python3 \
-    python-is-python3 \
     make \
     g++ \
-    build-essential \
     mongodb \
-    && rm -rf /var/lib/apt/lists/*
-
-# --- Node.js 18 LTS (STABILNY) ---
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g npm@latest \
-    && rm -rf /var/lib/apt/lists/*
-
-# --- Easter Egg ---
-RUN echo "Made in Poland by matsob0123. Engineering Pride." > /etc/made_in_poland_certificate.txt
+    mongodb-tools \
+    nodejs \
+    npm \
+    tini
 
 # --- App ---
 WORKDIR /app
 RUN git clone https://github.com/colloqi/pisignage-server.git .
 
-# WAŻNE: logi npm WIDOCZNE – brak freeze
-RUN npm install --production --unsafe-perm --loglevel=info
+RUN npm install --production --unsafe-perm
 
-# --- Start ---
+# --- Logo ---
+COPY logo.png /app/public/logo.png
+
+# --- Scripts ---
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
+
+# --- Healthcheck ---
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s \
+  CMD curl -f http://localhost:3000/api/status || exit 1
 
 EXPOSE 3000
 CMD [ "/run.sh" ]
