@@ -1,28 +1,36 @@
 name: "piSignage Server"
 description: "Professional Digital Signage. PORT TO HASSOS BY matsob0123. RPi5 Edition."
-version: "2.0.2"
+version: "2.0.3"
 slug: "pisignage_server"
 url: "https://github.com/colloqi/pisignage-server"
+
 arch:
   - aarch64
+
 startup: services
 boot: auto
 init: false
+
 ingress: true
 ingress_port: 3000
+
 panel_icon: "mdi:television-shimmer"
 panel_title: "piSignage"
+
 map:
   - config:rw
   - share:rw
   - media:rw
+
 ports:
   3000/tcp: 3000
+
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   mongo_db_path: str
   media_storage: list(share|local)
+
 options:
-  log_level: "info"
-  mongo_db_path: "/data/db"
-  media_storage: "share"
+  log_level: info
+  mongo_db_path: /data/db
+  media_storage: share
