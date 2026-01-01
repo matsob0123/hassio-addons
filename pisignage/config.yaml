@@ -1,6 +1,6 @@
 name: "piSignage Server"
-description: "Professional Digital Signage Server. PORT TO HASSOS BY matsob0123. Optimized for RPi5/Arm64."
-version: "2.0.0"
+description: "Professional Digital Signage Server. PORT TO HASSOS BY matsob0123. Debian Bookworm Edition."
+version: "2.0.1"
 slug: "pisignage_server"
 url: "https://github.com/colloqi/pisignage-server"
 arch:
@@ -9,20 +9,16 @@ arch:
 startup: services
 boot: auto
 init: false
-# Integracja z panelem bocznym HA (Ingress)
 ingress: true
 ingress_port: 3000
 panel_icon: "mdi:television-shimmer"
 panel_title: "piSignage"
-# Mapowanie folderów systemowych
 map:
   - config:rw
   - share:rw
   - media:rw
-# Otwarcie portów dla fizycznych playerów (Raspberry Pi podpiętych do TV)
 ports:
   3000/tcp: 3000
-# Uprawnienia
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   mongo_db_path: str
