@@ -1,10 +1,17 @@
-FROM ghcr.io/home-assistant/aarch64-base-debian:bookworm
+# =========================================================
+# piSignage Server - Home Assistant Add-on
+# Debian 12 (bookworm) / aarch64
+# =========================================================
+
+ARG BUILD_FROM
+FROM ${BUILD_FROM}
 
 ENV LANG=C.UTF-8 \
-    DEBIAN_FRONTEND=noninteractive \
     NODE_ENV=production
 
-# --- System ---
+# ---------------------------------------------------------
+# System packages
+# ---------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     curl \
@@ -14,32 +21,46 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     imagemagick \
     python3 \
     build-essential \
-    mongodb \
+    gnupg \
+    lsb-release \
+    tini \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---------------------------------------------------------
+# MongoDB official repo
+# ---------------------------------------------------------
+RUN curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
+    gpg --dearmor -o /usr/share/keyrings/mongodb-server.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/mongodb-server.gpg] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/6.0 main" \
+    > /etc/apt/sources.list.d/mongodb-org.list
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    mongodb-org \
     nodejs \
     npm \
     && rm -rf /var/lib/apt/lists/*
 
-# --- App ---
-WORKDIR /app
+# ---------------------------------------------------------
+# MongoDB dirs
+# ---------------------------------------------------------
+RUN mkdir -p /data/db /data/configdb
+
+# ---------------------------------------------------------
+# App
+# ---------------------------------------------------------
+WORKDIR /opt/pisignage
+
 RUN git clone https://github.com/colloqi/pisignage-server.git .
 
-RUN npm install --production --unsafe-perm
+RUN npm install --omit=dev
 
-# --- Logo (auto) ---
-RUN mkdir -p /app/public && \
-    convert -size 256x256 xc:black \
-      -gravity center \
-      -fill white \
-      -pointsize 36 \
-      -annotate 0 "piSignage\nHA Add-on" \
-      /app/public/logo.png
-
-# --- Start ---
+# ---------------------------------------------------------
+# run.sh
+# ---------------------------------------------------------
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s \
-  CMD curl -f http://localhost:3000/api/status || exit 1
+EXPOSE 3000 27017
 
-EXPOSE 3000
-CMD [ "/run.sh" ]
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/run.sh"]
