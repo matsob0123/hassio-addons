@@ -1,14 +1,13 @@
-# Używamy bazy Debian (Bookworm) zamiast Alpine, bo Alpine usunęło MongoDB
-ARG BUILD_FROM=ghcr.io/home-assistant/aarch64-base-debian:bookworm
-FROM $BUILD_FROM
+# WYMUSZAMY obraz Debian (ignorujemy to co podsyła Supervisor, bo podsyła Alpine)
+FROM ghcr.io/home-assistant/aarch64-base-debian:bookworm
 
-# Ustawienia środowiskowe (Nowy format KEY=VALUE)
-ENV LANG=C.UTF-8
-ENV NODE_ENV=production
+# Konfiguracja środowiska
+ENV LANG=C.UTF-8 \
+    DEBIAN_FRONTEND=noninteractive \
+    NODE_ENV=production
 
-# 1. Instalacja zależności systemowych i przygotowanie repozytorium MongoDB
-# MongoDB 7.0 wymaga gnupg i curl do pobrania kluczy
-RUN apt-get update && apt-get install -y \
+# 1. Instalacja zależności podstawowych
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     gnupg \
     lsb-release \
@@ -22,35 +21,32 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Dodanie klucza i repozytorium MongoDB 7.0 (oficjalne wsparcie dla ARM64/RPi5)
+# 2. Dodanie repozytorium MongoDB 7.0 (Oficjalne wsparcie ARM64)
 RUN curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
     gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor \
     && echo "deb [ arch=arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] http://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | \
     tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 
 # 3. Instalacja MongoDB i Node.js
-# Debian Bookworm ma w repozytorium dość świeże Node.js i npm
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     mongodb-org \
     nodejs \
     npm \
     && rm -rf /var/lib/apt/lists/*
 
-# 4. Easter Egg: Made in Poland
+# 4. Easter Egg
 RUN echo "Made in Poland by matsob0123. Engineering Pride." > /etc/made_in_poland_certificate.txt
 
-# 5. Pobranie kodu piSignage
+# 5. Konfiguracja aplikacji
 WORKDIR /app
 RUN git clone https://github.com/colloqi/pisignage-server.git .
 
-# 6. Instalacja modułów Node (z flagą unsafe-perm dla roota)
+# 6. Instalacja modułów (unsafe-perm pozwala na budowanie jako root w kontenerze)
 RUN npm install --production --unsafe-perm
 
-# 7. Kopiowanie skryptu startowego
+# 7. Skrypty
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
-# 8. Wystawienie portu
 EXPOSE 3000
-
 CMD [ "/run.sh" ]

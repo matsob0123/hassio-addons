@@ -1,83 +1,68 @@
 #!/usr/bin/with-contenv bashio
 
-# ==============================================================================
-#  piSignage Server Loader (Debian Edition)
-#  PORT TO HASSOS BY matsob0123
-#  MADE IN POLAND
-# ==============================================================================
-
 bashio::log.info "------------------------------------------------"
-bashio::log.info "Starting piSignage Server (Debian/RPi5 Fix)"
-bashio::log.info "Made in Poland by matsob0123"
+bashio::log.info "Starting piSignage Server (Debian Hardcoded)"
+bashio::log.info "PORT TO HASSOS BY matsob0123"
 bashio::log.info "------------------------------------------------"
 
-# 1. KONFIGURACJA I ZMIENNE
-MEDIA_STORAGE=$(bashio::config 'media_storage')
+# --- 1. SETUP FOLDERÓW (Trwałość danych) ---
+
+# Folder bazy danych
 MONGO_PATH=$(bashio::config 'mongo_db_path')
+if [ ! -d "$MONGO_PATH" ]; then
+    mkdir -p "$MONGO_PATH"
+fi
+# Fix uprawnień dla MongoDB (wymagane w Debianie)
+chown -R mongodb:mongodb "$MONGO_PATH"
+chown -R mongodb:mongodb /var/log/mongodb || mkdir -p /var/log/mongodb && chown -R mongodb:mongodb /var/log/mongodb
 
-# 2. TRWAŁOŚĆ DANYCH (PERSISTENCE) - MEDIA
+# Folder Mediów (Samba vs Local)
+MEDIA_STORAGE=$(bashio::config 'media_storage')
 if [ "$MEDIA_STORAGE" == "share" ]; then
-    bashio::log.info "Using /share/pisignage/media for storage..."
-    
-    if [ ! -d "/share/pisignage/media" ]; then
-        mkdir -p /share/pisignage/media
-        chmod 777 /share/pisignage/media
-    fi
-    
+    bashio::log.info "Using /share/pisignage/media..."
+    mkdir -p /share/pisignage/media
+    chmod 777 /share/pisignage/media
     rm -rf /app/media
     ln -s /share/pisignage/media /app/media
 else
-    bashio::log.info "Using internal /data storage for media..."
-    if [ ! -d "/data/media" ]; then
-        mkdir -p /data/media
-    fi
+    bashio::log.info "Using internal /data/media..."
+    mkdir -p /data/media
     rm -rf /app/media
     ln -s /data/media /app/media
 fi
 
-# 3. TRWAŁOŚĆ DANYCH - BAZA DANYCH
-bashio::log.info "Setting up MongoDB persistence..."
-if [ ! -d "$MONGO_PATH" ]; then
-    mkdir -p "$MONGO_PATH"
-fi
-# Upewniamy się, że użytkownik mongodb ma dostęp do folderu (w Debianie to ważne)
-chown -R mongodb:mongodb "$MONGO_PATH" || true
-
-# 4. TRWAŁOŚĆ DANYCH - CONFIG
+# Konfiguracja serwera
 if [ ! -d "/data/config" ]; then
     mkdir -p /data/config
-    if [ -d "/app/config" ]; then
-        cp -r /app/config/* /data/config/
-    fi
+    [ -d "/app/config" ] && cp -r /app/config/* /data/config/
 fi
 rm -rf /app/config
 ln -s /data/config /app/config
 
-# 5. URUCHOMIENIE MONGODB (Wersja Debian/Community)
-bashio::log.info "Starting MongoDB 7.0..."
-# Usuwamy stary plik lock jeśli istnieje (częsty błąd po restarcie prądu)
+
+# --- 2. START MONGODB ---
+
+bashio::log.info "Starting MongoDB..."
+# Czyszczenie locka po restartach
 rm -f "$MONGO_PATH/mongod.lock"
 
-# Uruchamiamy mongod w tle jako proces
-mongod --fork --logpath /var/log/mongodb.log --dbpath "$MONGO_PATH" --bind_ip_all
+# Uruchamiamy jako użytkownik mongodb (bezpieczeństwo + wymogi Debiana)
+# Używamy su-exec (jeśli dostępne) lub setuser, ale w Debianie HA najprościej puścić proces w tle
+# --bind_ip_all jest kluczowe dla dostępu kontenera
+mongod --fork --logpath /var/log/mongodb/mongod.log --dbpath "$MONGO_PATH" --bind_ip_all --user mongodb
 
-# Czekamy na wstanie bazy
-bashio::log.info "Waiting for MongoDB to initialize..."
+bashio::log.info "Waiting for DB..."
 sleep 5
 
-if pgrep mongod > /dev/null; then
-    bashio::log.info "MongoDB started successfully."
-else
-    bashio::log.error "MongoDB failed to start! Checking logs..."
-    if [ -f /var/log/mongodb.log ]; then
-        cat /var/log/mongodb.log
-    fi
+if ! pgrep mongod > /dev/null; then
+    bashio::log.error "MongoDB failed! Logs:"
+    cat /var/log/mongodb/mongod.log
     exit 1
 fi
 
-# 6. URUCHOMIENIE PISIGNAGE
-bashio::log.info "Starting Node.js Server..."
-bashio::log.info "PORT TO HASSOS BY matsob0123 - READY."
 
+# --- 3. START APLIKACJI ---
+
+bashio::log.info "Starting Node Server..."
 export PORT=3000
 cd /app && npm start
