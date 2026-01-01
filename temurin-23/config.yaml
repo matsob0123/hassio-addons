@@ -1,5 +1,5 @@
 name: "Eclipse Temurin JDK 23"
-version: "1.52"
+version: "1.53"
 slug: "temurin_23"
 description: "Addon that contains Temurin 23 with example.jar support"
 startup: services

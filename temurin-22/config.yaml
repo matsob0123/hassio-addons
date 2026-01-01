@@ -1,5 +1,5 @@
 name: "Eclipse Temurin JDK 22"
-version: "1.52"
+version: "1.53"
 slug: "temurin_22"
 description: "Addon that contains Temurin 22 with example.jar support"
 startup: services
