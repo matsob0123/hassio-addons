@@ -1,16 +1,35 @@
 name: "piSignage Server"
-description: "Open source Digital Signage server. PORT TO HASSOS BY matsob0123."
-version: "1.0.0"
+description: "Professional Digital Signage Server. PORT TO HASSOS BY matsob0123. Optimized for RPi5/Arm64."
+version: "2.0.0"
 slug: "pisignage_server"
+url: "https://github.com/colloqi/pisignage-server"
 arch:
   - aarch64
   - amd64
+startup: services
+boot: auto
 init: false
+# Integracja z panelem bocznym HA (Ingress)
+ingress: true
+ingress_port: 3000
+panel_icon: "mdi:television-shimmer"
+panel_title: "piSignage"
+# Mapowanie folderów systemowych
 map:
   - config:rw
-options:
-  mongo_url: "mongodb://localhost:27017/pisignage-server"
-schema:
-  mongo_url: str
+  - share:rw
+  - media:rw
+# Otwarcie portów dla fizycznych playerów (Raspberry Pi podpiętych do TV)
 ports:
-  8000/tcp: 8000
+  3000/tcp: 3000
+# Uprawnienia
+schema:
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  mongo_db_path: str
+  media_storage: list(share|local)
+  admin_password_reset: str?
+options:
+  log_level: "info"
+  mongo_db_path: "/data/db"
+  media_storage: "share"
+  admin_password_reset: ""
