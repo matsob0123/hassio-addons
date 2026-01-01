@@ -2,13 +2,10 @@
 set -e
 
 bashio::log.info "========================================"
-bashio::log.info "piSignage Server – Home Assistant Add-on"
-bashio::log.info "Full Port + Watchdog + Healthcheck"
+bashio::log.info "piSignage Server – HA Add-on (Debian)"
 bashio::log.info "Author: matsob0123"
 bashio::log.info "========================================"
 
-# --- Config ---
-LOG_LEVEL="$(bashio::config log_level)"
 MONGO_PATH="$(bashio::config mongo_db_path)"
 MEDIA_STORAGE="$(bashio::config media_storage)"
 NODE_ENV="$(bashio::config node_env)"
@@ -16,21 +13,16 @@ NODE_ENV="$(bashio::config node_env)"
 export NODE_ENV
 export PORT=3000
 
-# --- Mongo ---
+# --- MongoDB ---
 mkdir -p "$MONGO_PATH"
-chown -R mongodb:mongodb "$MONGO_PATH"
-
-mkdir -p /var/log/mongodb
-chown -R mongodb:mongodb /var/log/mongodb
-
 rm -f "$MONGO_PATH/mongod.lock"
 
 bashio::log.info "Starting MongoDB..."
 mongod \
   --dbpath "$MONGO_PATH" \
-  --logpath /var/log/mongodb/mongod.log \
   --bind_ip_all \
-  --fork
+  --fork \
+  --logpath /var/log/mongodb.log
 
 sleep 5
 
@@ -44,12 +36,12 @@ else
   ln -s /data/media /app/media
 fi
 
-# --- Config persistence ---
+# --- Config ---
 mkdir -p /data/config
 rm -rf /app/config
 ln -s /data/config /app/config
 
-# --- Start App ---
-bashio::log.info "Starting Node.js server..."
+# --- Start ---
+bashio::log.info "Starting piSignage Node server..."
 cd /app
 exec npm start
