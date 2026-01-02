@@ -1,16 +1,17 @@
 # =========================================================
 # piSignage Server – Home Assistant Add-on
-# Based on colloqi Dockerfile (OFFICIAL LOGIC)
+# Based EXACTLY on colloqi logic
 # =========================================================
 
 FROM ghcr.io/home-assistant/aarch64-base:latest
 
 ENV LANG=C.UTF-8 \
     NODE_ENV=production \
-    MONGO_VERSION=4.4.18
+    MONGO_VERSION=4.2.24 \
+    MONGO_DIR=/opt/mongodb
 
 # ---------------------------------------------------------
-# System (ALPINE)
+# System (Alpine)
 # ---------------------------------------------------------
 RUN apk add --no-cache \
     bash \
@@ -25,19 +26,21 @@ RUN apk add --no-cache \
     nodejs \
     npm \
     tini \
-    tar \
-    xz
+    tar
 
 # ---------------------------------------------------------
-# MongoDB (OFFICIAL piSignage WAY)
+# MongoDB (OFFICIAL colloqi way)
 # ---------------------------------------------------------
 WORKDIR /opt
 
-RUN curl -L https://fastdl.mongodb.org/linux/mongodb-linux-aarch64-${MONGO_VERSION}.tgz \
-    | tar -xz && \
-    mv mongodb-linux-aarch64-${MONGO_VERSION} mongodb
+RUN curl -fL \
+    https://fastdl.mongodb.org/linux/mongodb-linux-aarch64-ubuntu1804-${MONGO_VERSION}.tgz \
+    -o mongo.tgz \
+    && tar -xzf mongo.tgz \
+    && mv mongodb-linux-aarch64-ubuntu1804-${MONGO_VERSION} mongodb \
+    && rm mongo.tgz
 
-ENV PATH="/opt/mongodb/bin:${PATH}"
+ENV PATH="${MONGO_DIR}/bin:${PATH}"
 
 RUN mkdir -p /data/db
 
