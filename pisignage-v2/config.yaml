@@ -1,5 +1,5 @@
 name: piSignage Server
-version: "1.0.0"
+version: "1.0.0.1"
 slug: pisignage_server_v2
 description: Digital signage server for Raspberry Pi displays
 arch:
