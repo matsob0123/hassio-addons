@@ -6,7 +6,7 @@ configuration:
       Example: mongodb://host:port/database or mongodb://user:pass@host:port/database
   port:
     name: Server Port
-    description: Port number for the piSignage web interface (default: 3000)
+    description: Port number for the piSignage web interface (default is 3000)
   username:
     name: Username
     description: Login username for the piSignage web interface
