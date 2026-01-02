@@ -1,6 +1,6 @@
 name: "piSignage Server"
 description: "Professional Digital Signage – Full HA Add-on Port"
-version: "3.0.3"
+version: "3.0.4"
 slug: "pisignage_server"
 url: "https://github.com/colloqi/pisignage-server"
 

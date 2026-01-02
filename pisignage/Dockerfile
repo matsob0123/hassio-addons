@@ -1,17 +1,18 @@
 # =========================================================
-# piSignage Server - Home Assistant Add-on
-# Debian 12 (bookworm) / aarch64
+# piSignage Server – Home Assistant Add-on
+# Based on colloqi Dockerfile (OFFICIAL LOGIC)
 # =========================================================
 
-FROM ghcr.io/home-assistant/aarch64-base-debian:bookworm
+FROM ghcr.io/home-assistant/aarch64-base:latest
 
 ENV LANG=C.UTF-8 \
-    NODE_ENV=production
+    NODE_ENV=production \
+    MONGO_VERSION=4.4.18
 
 # ---------------------------------------------------------
-# System
+# System (ALPINE)
 # ---------------------------------------------------------
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     bash \
     curl \
     git \
@@ -19,36 +20,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     imagemagick \
     python3 \
-    build-essential \
-    gnupg \
-    lsb-release \
-    tini \
-    && rm -rf /var/lib/apt/lists/*
-
-# ---------------------------------------------------------
-# MongoDB official repo
-# ---------------------------------------------------------
-RUN curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
-    gpg --dearmor -o /usr/share/keyrings/mongodb.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/mongodb.gpg] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/6.0 main" \
-    > /etc/apt/sources.list.d/mongodb-org.list
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    mongodb-org \
+    make \
+    g++ \
     nodejs \
     npm \
-    && rm -rf /var/lib/apt/lists/*
+    tini \
+    tar \
+    xz
 
 # ---------------------------------------------------------
-# MongoDB data
+# MongoDB (OFFICIAL piSignage WAY)
 # ---------------------------------------------------------
+WORKDIR /opt
+
+RUN curl -L https://fastdl.mongodb.org/linux/mongodb-linux-aarch64-${MONGO_VERSION}.tgz \
+    | tar -xz && \
+    mv mongodb-linux-aarch64-${MONGO_VERSION} mongodb
+
+ENV PATH="/opt/mongodb/bin:${PATH}"
+
 RUN mkdir -p /data/db
 
 # ---------------------------------------------------------
-# App
+# piSignage Server
 # ---------------------------------------------------------
 WORKDIR /opt/pisignage
+
 RUN git clone https://github.com/colloqi/pisignage-server.git .
+
 RUN npm install --omit=dev
 
 # ---------------------------------------------------------
@@ -57,7 +56,7 @@ RUN npm install --omit=dev
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
-EXPOSE 3000 27017
+EXPOSE 3000
 
-ENTRYPOINT ["/usr/bin/tini", "--"]
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/run.sh"]
