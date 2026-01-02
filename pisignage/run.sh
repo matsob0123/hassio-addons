@@ -3,25 +3,19 @@ set -e
 
 CONFIG_PATH=/data/options.json
 
+# Pobierz zmienne z options.json
 LOG_LEVEL=$(jq -r '.log_level' $CONFIG_PATH)
-MONGO_DB_PATH=$(jq -r '.mongo_db_path' $CONFIG_PATH)
+MONGO_URI=$(jq -r '.mongo_uri' $CONFIG_PATH)
 NODE_ENV=$(jq -r '.node_env' $CONFIG_PATH)
+MEDIA_STORAGE=$(jq -r '.media_storage' $CONFIG_PATH)
 
 export NODE_ENV=${NODE_ENV}
+export MONGO_URI=${MONGO_URI}
 
-echo "[piSignage] Starting MongoDB at ${MONGO_DB_PATH}..."
-
-mongod \
-  --dbpath ${MONGO_DB_PATH} \
-  --bind_ip 127.0.0.1 \
-  --nojournal \
-  --fork \
-  --logpath /tmp/mongodb.log
-
-echo "[piSignage] Waiting for MongoDB..."
-sleep 5
-
-echo "[piSignage] Starting piSignage Server (NODE_ENV=${NODE_ENV})"
+echo "[piSignage] Starting piSignage Server..."
+echo "[piSignage] LOG_LEVEL=${LOG_LEVEL}, NODE_ENV=${NODE_ENV}, MONGO_URI=${MONGO_URI}"
 
 cd /opt/pisignage
+
+# Uruchom serwer Node.js
 exec node server.js

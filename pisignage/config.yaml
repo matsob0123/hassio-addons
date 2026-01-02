@@ -1,6 +1,6 @@
 name: "piSignage Server"
 description: "Professional Digital Signage – Full HA Add-on Port"
-version: "3.0.6"
+version: "4.0.0"
 slug: "pisignage_server"
 url: "https://github.com/colloqi/pisignage-server"
 
@@ -29,12 +29,12 @@ watchdog: http://[HOST]:3000/api/status
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
-  mongo_db_path: str
+  mongo_uri: str
   media_storage: list(share|local)
   node_env: list(production|development)
 
 options:
   log_level: info
-  mongo_db_path: /data/db
+  mongo_uri: "mongodb://mongo_user:mongo_pass@192.168.1.100:27017/pisignage"
   media_storage: share
   node_env: production

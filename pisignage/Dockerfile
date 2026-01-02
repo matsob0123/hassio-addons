@@ -1,28 +1,35 @@
-ARG BUILD_FROM
+# Home Assistant Base
+ARG BUILD_FROM=ghcr.io/home-assistant/aarch64-base:latest
 FROM ${BUILD_FROM}
 
-ENV LANG C.UTF-8
+# Metadane
+LABEL io.hass.name="piSignage Server"
+LABEL io.hass.description="Professional Digital Signage – Full HA Add-on Port"
+LABEL io.hass.arch="aarch64"
+LABEL io.hass.type="addon"
+LABEL io.hass.version="3.0.6"
+LABEL io.hass.url="https://github.com/colloqi/pisignage-server"
 
+# Zainstaluj tylko Node.js i wymagane narzędzia
 RUN apk add --no-cache \
     nodejs \
     npm \
-    mongodb \
-    mongodb-tools \
     bash \
     python3 \
     make \
-    g++ \
-    git
+    g++
 
+# Utwórz folder dla aplikacji
 WORKDIR /opt/pisignage
-COPY app/ /opt/pisignage/
-RUN npm install --omit=dev
 
-RUN mkdir -p /data/db /data/pisignage
+# Skopiuj pliki lokalne
+COPY package.json package.json
+COPY run.sh run.sh
+COPY config.yaml config.yaml
+# server.js i node_modules mogą być kopiowane lub zainstalowane przez npm install
 
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
+# Instalacja zależności Node.js
+RUN npm install --production
 
-EXPOSE 3000
-
-CMD ["/run.sh"]
+# Skrypt startowy
+ENTRYPOINT ["/run.sh"]
