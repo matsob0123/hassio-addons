@@ -37,4 +37,4 @@ schema:
   max_upload_size: str
   session_secret: str
   log_level: list(debug|info|warn|error)?
-image: ghcr.io/homeassistant/{arch}-addon-pisignage
+image: pisignage/pisignage-server:latest
