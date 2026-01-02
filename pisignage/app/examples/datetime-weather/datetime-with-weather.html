@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Clock example for piSignage</title>
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            background-color: black;
+            margin: 0;
+        }
+        .flex-container {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .row {
+            width: auto;
+            text-align: center;
+            margin: 0px;
+        }
+        #firstrow {
+            margin-bottom: 2vh;
+        }
+        #secondrow {
+            font-size: 250px;
+            font-family: Sans-serif;
+            color: white;
+            line-height: 0.9;
+        }
+        #temperature {
+            font-size: 120px;
+            font-family: Sans-serif;
+            color: white;
+            line-height: 0.9;
+        }
+        .greetings-container {
+            margin-top: 20vh;
+        }
+        .secondary-text {
+            font-size: 40px;
+            font-weight: 200;
+            font-family: Sans-serif;
+            color: darkgray;
+        }
+        .greetings {
+            font-family: Sans-serif;
+            color: darkgray;
+            font-size: 20px;
+            font-weight: 400;
+            line-height: 30px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        i {
+            color: #fff;
+            font-family: weather;
+            font-size: 250px;
+            font-weight: normal;
+            font-style: normal;
+            line-height: 0.8;
+            text-transform: none;
+        }
+
+        .citation {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            color: #ccc;
+            font-size:18px;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="flex-container">
+    <div class="row">
+        <div class="secondary-text" id="firstrow"></div>
+        <div  id="secondrow"></div>
+        <div class="greetings-container">
+            <div>
+                <canvas height="64" width="64" id="icon"></canvas>
+                <div id="temperature"></div>
+                <div class="secondary-text" id="condition"></div>
+                <div class="secondary-text" id="city"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<i id="message" class="citation">Weather forecast powered by Dark Sky</i>
+
+
+<script src="https://cdn.rawgit.com/maxdow/skycons/master/skycons.js"></script>
+<script src="lib/moment.min.js"></script>
+<script type="text/javascript">
+    var clock,calendar,icon,temperature,condition,city;
+    var citycode = 'Bengaluru, India';
+    window.onload = function() {
+        calendar = document.getElementById("firstrow");
+        clock = document.getElementById("secondrow");
+        icon = document.getElementById("icon");
+        temperature = document.getElementById("temperature");
+        condition = document.getElementById("condition");
+        city = document.getElementById("city");
+        message = document.getElementById("message");
+        updateClock();
+        getWeather(); //Get the initial weather.
+        setInterval(getWeather, 600000); //Update the weather every 10 minutes.
+    };
+
+    function updateClock(){
+        clock.innerHTML = moment().format("hh:mm");
+        calendar.innerHTML = moment().format("ddd DD MMM");
+        setTimeout(updateClock,10000)
+    }
+
+    function getWeather() {
+        fetch(
+            `https://pisignage.com/api/getweather?place=${citycode}&units=auto&lang=en`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": " application/json"
+                },
+                mode: "cors"
+            }
+        )
+            .then(res => res.json())
+            .then(data => {
+
+                const skycons = new Skycons({ color: "#fff" });
+
+                if (!(data && data.success)) {
+                    if (data.stat_message) message.textContent = data.stat_message;
+                    return console.log("Could not get weather data, reason: " + data.stat_message);
+                }
+
+                message.textContent = "Weather forecast powered by Dark Sky";
+                const weatherData = data.data;
+                //console.log(weatherData);
+
+                temperature.textContent = weatherData.currently.temperature.toFixed(1); //+ "°C";
+                condition.textContent = weatherData.currently.summary;//.toUpperCase();
+                skycons.add(
+                    icon,
+                    weatherData.currently.icon.toUpperCase().replace(/-/g, "_")
+                );
+                skycons.play();
+            }).catch(function(error) {
+            message.textContent = error;
+        });
+    }
+
+
+
+</script>
+
+</body>
+</html>

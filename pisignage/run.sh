@@ -1,17 +1,27 @@
-#!/usr/bin/env bash
+#!/usr/bin/with-contenv bash
 set -e
 
-echo "[piSignage] Starting MongoDB..."
-mongod --dbpath /data/db --bind_ip_all &
+CONFIG_PATH=/data/options.json
+
+LOG_LEVEL=$(jq -r '.log_level' $CONFIG_PATH)
+MONGO_DB_PATH=$(jq -r '.mongo_db_path' $CONFIG_PATH)
+NODE_ENV=$(jq -r '.node_env' $CONFIG_PATH)
+
+export NODE_ENV=${NODE_ENV}
+
+echo "[piSignage] Starting MongoDB at ${MONGO_DB_PATH}..."
+
+mongod \
+  --dbpath ${MONGO_DB_PATH} \
+  --bind_ip 127.0.0.1 \
+  --nojournal \
+  --fork \
+  --logpath /tmp/mongodb.log
 
 echo "[piSignage] Waiting for MongoDB..."
-for i in $(seq 1 30); do
-  if mongo --eval "db.runCommand({ ping: 1 })" >/dev/null 2>&1; then
-    echo "[piSignage] MongoDB ready"
-    break
-  fi
-  sleep 1
-done
+sleep 5
 
-echo "[piSignage] Starting piSignage Server..."
-exec npm start
+echo "[piSignage] Starting piSignage Server (NODE_ENV=${NODE_ENV})"
+
+cd /opt/pisignage
+exec node server.js
