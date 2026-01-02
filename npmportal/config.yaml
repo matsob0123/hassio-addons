@@ -1,13 +1,19 @@
 name: "NPM Addon Runner"
-version: "1.0"
+version: "1.0.1"
 slug: "npm_addon_runner"
 description: "Run custom NPM commands in /share/npmaddon"
 startup: services
 boot: auto
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
 host_network: true
 ingress: false
 map:
-  - share:rw  # dostęp do /share
+  - share:rw
 options:
   commands:
     - "npm install"
