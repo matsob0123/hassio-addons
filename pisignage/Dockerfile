@@ -26,6 +26,8 @@ WORKDIR /opt/pisignage
 COPY package.json package.json
 COPY run.sh run.sh
 COPY config.yaml config.yaml
+COPY run.sh /
+RUN chmod +x /run.sh
 # server.js i node_modules mogą być kopiowane lub zainstalowane przez npm install
 
 # Instalacja zależności Node.js
