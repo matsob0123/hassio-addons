@@ -1,0 +1,102 @@
+#include <tunables/global>
+
+profile pisignage_server flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+
+  # Capabilities
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability dac_override,
+  capability dac_read_search,
+  capability fowner,
+  capability chown,
+  capability fsetid,
+  capability kill,
+  capability sys_chroot,
+
+  # Network access
+  network tcp,
+  network udp,
+  network inet stream,
+  network inet6 stream,
+
+  # S6-Overlay
+  /init ix,
+  /bin/** ix,
+  /usr/bin/** ix,
+  /usr/lib/bashio/** ix,
+  /etc/s6/** rix,
+  /run/s6/** rwix,
+  /etc/services.d/** rwix,
+  /etc/cont-init.d/** rwix,
+  /etc/cont-finish.d/** rwix,
+  /run/** rw,
+  /run/lock/** rw,
+  
+  # Application files
+  /app/** rwix,
+  
+  # Data directories (persistent)
+  /data/** rw,
+  /data/media/** rw,
+  /data/media/_thumbnails/** rw,
+  /data/logs/** rw,
+
+  # Temporary files
+  /tmp/** rw,
+  /var/tmp/** rw,
+
+  # System files (read-only)
+  /etc/hosts r,
+  /etc/resolv.conf r,
+  /etc/nsswitch.conf r,
+  /etc/passwd r,
+  /etc/group r,
+  /etc/ssl/openssl.cnf r,
+
+  # Node.js and dependencies
+  /usr/bin/node rix,
+  /usr/lib/node_modules/** r,
+  /usr/local/lib/node_modules/** r,
+
+  # FFmpeg
+  /usr/bin/ffmpeg rix,
+  /usr/bin/ffprobe rix,
+  /usr/share/ffmpeg/** r,
+
+  # ImageMagick
+  /usr/bin/convert rix,
+  /usr/bin/identify rix,
+  /usr/bin/magick rix,
+  /usr/share/ImageMagick-*/** r,
+  /etc/ImageMagick-*/** r,
+
+  # Proc filesystem
+  @{PROC}/ r,
+  @{PROC}/@{pid}/fd/ r,
+  @{PROC}/@{pid}/stat r,
+  @{PROC}/sys/net/core/somaxconn r,
+  @{PROC}/sys/kernel/hostname r,
+  @{PROC}/cpuinfo r,
+  @{PROC}/meminfo r,
+  owner @{PROC}/@{pid}/cmdline r,
+  owner @{PROC}/@{pid}/status r,
+
+  # System devices
+  /dev/null rw,
+  /dev/zero rw,
+  /dev/urandom r,
+  /dev/random r,
+  /dev/tty rw,
+  
+  # DNS
+  /etc/gai.conf r,
+  /usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache r,
+  /usr/lib/aarch64-linux-gnu/gconv/gconv-modules.cache r,
+  /usr/lib/arm-linux-gnueabihf/gconv/gconv-modules.cache r,
+  
+  # Suppress noise
+  deny /sys/devices/virtual/dmi/** r,
+  deny /proc/sys/kernel/random/boot_id r,
+}

@@ -1,0 +1,89 @@
+#!/usr/bin/with-contenv bashio
+
+# Enable job control
+set -m
+
+# Get configuration
+MONGODB_URI=$(bashio::config 'mongodb_uri')
+PORT=$(bashio::config 'port')
+USERNAME=$(bashio::config 'username')
+PASSWORD=$(bashio::config 'password')
+PISIGNAGE_USERNAME=$(bashio::config 'pisignage_username')
+MAX_UPLOAD_SIZE=$(bashio::config 'max_upload_size')
+SESSION_SECRET=$(bashio::config 'session_secret')
+LOG_LEVEL=$(bashio::config 'log_level')
+
+bashio::log.info "Starting piSignage Server..."
+bashio::log.info "MongoDB URI: ${MONGODB_URI}"
+bashio::log.info "Port: ${PORT}"
+bashio::log.info "Log Level: ${LOG_LEVEL}"
+
+# Export environment variables
+export NODE_ENV=production
+export MONGODB_URI="${MONGODB_URI}"
+export PORT="${PORT}"
+export MAX_UPLOAD_SIZE="${MAX_UPLOAD_SIZE}"
+export SESSION_SECRET="${SESSION_SECRET}"
+export LOG_LEVEL="${LOG_LEVEL}"
+export USERNAME="${USERNAME}"
+export PASSWORD="${PASSWORD}"
+export PISIGNAGE_USERNAME="${PISIGNAGE_USERNAME}"
+
+# Create symbolic links for media directories
+if [ ! -L "/app/media" ]; then
+    rm -rf /app/media
+    ln -sf /data/media /app/media
+fi
+
+# Ensure directories exist with proper permissions
+mkdir -p /data/media/_thumbnails
+mkdir -p /data/logs
+chmod -R 755 /data/media
+chmod -R 755 /data/logs
+
+# Create config file from environment
+bashio::log.info "Generating configuration..."
+cat > /app/config/env/production.js << EOF
+module.exports = {
+    db: '${MONGODB_URI}',
+    port: ${PORT},
+    sessionSecret: '${SESSION_SECRET}',
+    maxUploadSize: '${MAX_UPLOAD_SIZE}',
+    mediaDir: '/data/media',
+    logDir: '/data/logs',
+    username: '${USERNAME}',
+    password: '${PASSWORD}',
+    pisignageUsername: '${PISIGNAGE_USERNAME}'
+};
+EOF
+
+# Wait for MongoDB to be available
+bashio::log.info "Waiting for MongoDB connection..."
+MONGODB_HOST=$(echo ${MONGODB_URI} | sed -E 's|mongodb://([^:/]+).*|\1|')
+MONGODB_PORT=$(echo ${MONGODB_URI} | sed -E 's|mongodb://[^:]+:([0-9]+).*|\1|')
+
+if [ -z "${MONGODB_PORT}" ] || [ "${MONGODB_PORT}" == "${MONGODB_URI}" ]; then
+    MONGODB_PORT=27017
+fi
+
+max_attempts=30
+attempt=0
+until nc -z ${MONGODB_HOST} ${MONGODB_PORT} 2>/dev/null; do
+    attempt=$((attempt+1))
+    if [ ${attempt} -ge ${max_attempts} ]; then
+        bashio::log.error "Could not connect to MongoDB after ${max_attempts} attempts"
+        exit 1
+    fi
+    bashio::log.info "Waiting for MongoDB... (attempt ${attempt}/${max_attempts})"
+    sleep 2
+done
+
+bashio::log.info "MongoDB connection established!"
+
+# Start Node.js server
+cd /app
+bashio::log.info "Starting Node.js server..."
+
+exec node server.js 2>&1 | while read line; do
+    bashio::log.info "${line}"
+done

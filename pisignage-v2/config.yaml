@@ -1,0 +1,40 @@
+name: piSignage Server
+version: "1.0.0"
+slug: pisignage_server
+description: Digital signage server for Raspberry Pi displays
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+init: false
+startup: application
+boot: auto
+ports:
+  3000/tcp: 3000
+ports_description:
+  3000/tcp: Web interface and API
+webui: http://[HOST]:[PORT:3000]
+ingress: true
+ingress_port: 3000
+panel_icon: mdi:television-play
+options:
+  mongodb_uri: "mongodb://localhost:27017/pisignage"
+  port: 3000
+  username: "pi"
+  password: "pi"
+  pisignage_username: ""
+  max_upload_size: "2048mb"
+  session_secret: "piSignageSecret2024"
+  log_level: "info"
+schema:
+  mongodb_uri: str
+  port: port
+  username: str
+  password: str
+  pisignage_username: str?
+  max_upload_size: str
+  session_secret: str
+  log_level: list(debug|info|warn|error)?
+image: ghcr.io/homeassistant/{arch}-addon-pisignage

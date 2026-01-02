@@ -1,0 +1,36 @@
+configuration:
+  mongodb_uri:
+    name: MongoDB URI
+    description: >
+      Full MongoDB connection string including host, port, and database.
+      Example: mongodb://host:port/database or mongodb://user:pass@host:port/database
+  port:
+    name: Server Port
+    description: Port number for the piSignage web interface (default: 3000)
+  username:
+    name: Username
+    description: Login username for the piSignage web interface
+  password:
+    name: Password
+    description: Login password for the piSignage web interface (change default!)
+  pisignage_username:
+    name: piSignage.com Username
+    description: >
+      Your username from pisignage.com (not email). Required for license upload
+      and cloud features. Leave empty if not using cloud features.
+  max_upload_size:
+    name: Maximum Upload Size
+    description: >
+      Maximum file upload size. Increase for large videos.
+      Format: number + unit (mb/gb). Example: 2048mb or 2gb
+  session_secret:
+    name: Session Secret
+    description: >
+      Secret key for session encryption. Change to a random string for security.
+      Generate with: openssl rand -base64 32
+  log_level:
+    name: Log Level
+    description: Logging verbosity level. Use 'debug' for troubleshooting.
+
+network:
+  3000/tcp: Web interface and API port

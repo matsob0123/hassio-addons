@@ -1,0 +1,17 @@
+#!/usr/bin/with-contenv bashio
+
+# Graceful shutdown
+bashio::log.info "Shutting down piSignage Server..."
+
+# Kill any remaining node processes
+pkill -TERM node
+
+# Wait for processes to terminate
+sleep 2
+
+# Force kill if still running
+pkill -KILL node 2>/dev/null || true
+
+bashio::log.info "piSignage Server stopped"
+
+exit 0
