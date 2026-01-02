@@ -1,5 +1,5 @@
 name: piSignage Server
-version: "1.0.1"
+version: "1.0.2"
 slug: pisignage_server_v2
 description: Digital signage server for Raspberry Pi displays
 arch:
@@ -37,4 +37,3 @@ schema:
   max_upload_size: str
   session_secret: str
   log_level: list(debug|info|warn|error)?
-image: pisignage/pisignage-server:latest
