@@ -1,8 +1,5 @@
 # MakeMKV Wrapper — Home Assistant Add-on
 
-> **⚠️ Maintainer note:** Please change the `version` field in `config.yaml`
-> to a value **higher than `2.0.3`** before publishing any update!
-
 A Home Assistant add-on that wraps [jlesage/docker-makemkv](https://github.com/jlesage/docker-makemkv)
 to provide a full MakeMKV disc-ripping GUI accessible from the HA sidebar.
 

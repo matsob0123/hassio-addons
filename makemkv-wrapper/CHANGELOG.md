@@ -3,15 +3,6 @@
 All notable changes to MakeMKV Wrapper will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
----
-
-## ⚠️ NOTE TO MAINTAINER
-**Please change the `version` field in `config.yaml` to a value higher than `2.0.3`**
-every time you publish a fix or update. Home Assistant uses the version number to
-detect updates and notify users. If the version does not change, users will never
-see the update in their dashboard.
-
----
 
 ## [2.0.3] — Current release (please bump this version!)
 
