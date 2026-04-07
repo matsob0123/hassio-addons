@@ -1,0 +1,153 @@
+##
+## MakeMKV Wrapper — Home Assistant Add-on configuration
+## Ported and maintained by matsob0123
+## Original container: https://github.com/jlesage/docker-makemkv
+##
+## ⚠️  PLEASE CHANGE THE VERSION NUMBER BELOW TO SOMETHING HIGHER THAN 2.0.3.1
+##     every time you make a fix or update, or Home Assistant will not offer
+##     the update to users!
+##
+
+name: MakeMKV Wrapper
+version: "2.0.4"
+slug: makemkv_wrapper
+description: >-
+  Rip DVDs and Blu-rays via jlesage/docker-makemkv.
+  Full web UI with VNC, auto-ripper, AppArmor hardening and
+  configurable output paths — all from the HA sidebar.
+url: https://github.com/matsob0123/hass-makemkv
+
+##──────────────────────────────────────────────────────────────────────────────
+## Architectures
+## armhf / armv7 / i386 removed — deprecated and unsupported by supervisor
+##──────────────────────────────────────────────────────────────────────────────
+arch:
+  - aarch64
+  - amd64
+
+##──────────────────────────────────────────────────────────────────────────────
+## Startup & boot
+##──────────────────────────────────────────────────────────────────────────────
+startup: services
+boot: auto
+
+##──────────────────────────────────────────────────────────────────────────────
+## init: false — CRITICAL for s6-overlay v3 compatibility
+##
+## This tells the HA supervisor NOT to inject Docker's default tini init.
+## The jlesage base image provides its own s6-overlay v3 /init which MUST
+## run as PID 1. Without this flag the supervisor wraps the container with
+## tini, s6 detects it is not PID 1, and refuses to start — producing:
+##
+##     /bin/sh: can't open '/init': Permission denied
+##     s6-overlay-suexec: fatal: can only run as pid 1
+##
+## See: https://developers.home-assistant.io/blog/2022/05/12/s6-overlay-base-images/
+##──────────────────────────────────────────────────────────────────────────────
+init: false
+
+##──────────────────────────────────────────────────────────────────────────────
+## Ingress — sidebar web UI (proxied through HA, no separate port needed)
+##──────────────────────────────────────────────────────────────────────────────
+ingress: true
+ingress_port: 5800
+ingress_stream: true
+panel_icon: mdi:disc
+panel_title: MakeMKV
+
+##──────────────────────────────────────────────────────────────────────────────
+## Storage maps
+## Supervisor map syntax: type or "type:rw"  (NOT "- config:rw")
+##──────────────────────────────────────────────────────────────────────────────
+map:
+  - type: media
+    read_only: false
+  - type: share
+    read_only: false
+
+##──────────────────────────────────────────────────────────────────────────────
+## Host devices — optical drives
+## Add sr1, sr2 … if you have more than one drive
+##──────────────────────────────────────────────────────────────────────────────
+devices:
+  - /dev/sr0
+
+##──────────────────────────────────────────────────────────────────────────────
+## Privileges — only what jlesage's container actually needs
+##──────────────────────────────────────────────────────────────────────────────
+privileged:
+  - SYS_ADMIN
+  - DAC_READ_SEARCH
+
+##──────────────────────────────────────────────────────────────────────────────
+## AppArmor — use bundled apparmor.txt profile
+##──────────────────────────────────────────────────────────────────────────────
+apparmor: true
+
+##──────────────────────────────────────────────────────────────────────────────
+## Watchdog — supervisor restarts the add-on if the web UI stops responding
+##──────────────────────────────────────────────────────────────────────────────
+watchdog: "http://[HOST]:[PORT:5800]/"
+
+##──────────────────────────────────────────────────────────────────────────────
+## User-facing options (editable in the HA UI — values written to options.json)
+##──────────────────────────────────────────────────────────────────────────────
+options:
+  ## MakeMKV license key — leave empty to use the rolling beta key
+  makemkv_key: ""
+
+  ## Container identity
+  puid: 1000
+  pgid: 1000
+  umask: "0022"
+  timezone: "Europe/Warsaw"
+
+  ## Display / VNC
+  display_width: 1280
+  display_height: 768
+  vnc_password: ""
+
+  ## Auto disc ripper
+  auto_disc_ripper: false
+  auto_disc_ripper_eject: true
+  auto_disc_ripper_parallel_rip: false
+  auto_disc_ripper_interval: 5
+  auto_disc_ripper_min_title_length: 600
+  auto_disc_ripper_bd_mode: "mkv"
+  auto_disc_ripper_force_unique_output_dir: false
+
+  ## Output path (absolute path inside the container)
+  output_path: /media/makemkv
+
+  ## Misc
+  keep_app_running: true
+  app_niceness: 0
+  enable_cjk_font: false
+  dark_mode: false
+  log_level: "info"
+
+##──────────────────────────────────────────────────────────────────────────────
+## Schema — validation rules for each option
+##──────────────────────────────────────────────────────────────────────────────
+schema:
+  makemkv_key: str?
+  puid: int(0,65534)
+  pgid: int(0,65534)
+  umask: str?
+  timezone: str
+  display_width: int(320,7680)
+  display_height: int(240,4320)
+  vnc_password: password?
+  auto_disc_ripper: bool
+  auto_disc_ripper_eject: bool
+  auto_disc_ripper_parallel_rip: bool
+  auto_disc_ripper_interval: int(1,3600)
+  auto_disc_ripper_min_title_length: int(0,99999)
+  auto_disc_ripper_bd_mode: list(mkv|backup)
+  auto_disc_ripper_force_unique_output_dir: bool
+  output_path: str
+  keep_app_running: bool
+  app_niceness: int(-20,19)
+  enable_cjk_font: bool
+  dark_mode: bool
+  log_level: list(info|debug|trace)

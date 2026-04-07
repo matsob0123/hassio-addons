@@ -1,0 +1,123 @@
+##
+## translations/en.yaml
+## Home Assistant UI strings for MakeMKV Wrapper options
+## Ported by matsob0123
+##
+## ⚠️  PLEASE CHANGE THE VERSION NUMBER IN config.yaml TO HIGHER THAN 2.0.3
+##
+
+configuration:
+  makemkv_key:
+    name: MakeMKV license key
+    description: >-
+      Your personal MakeMKV key (starts with T-...). Leave empty to use the
+      rolling beta key that is refreshed automatically.
+
+  puid:
+    name: User ID (PUID)
+    description: >-
+      UID under which MakeMKV runs inside the container. Should match the
+      owner of your output folder (usually 1000 for the first Linux user).
+
+  pgid:
+    name: Group ID (PGID)
+    description: >-
+      GID under which MakeMKV runs. Use the same group that owns /media.
+
+  umask:
+    name: File permission mask (umask)
+    description: >-
+      Controls default permissions of created files.
+      0022 = owner rw, group/others r. 0002 = owner & group rw.
+
+  timezone:
+    name: Timezone
+    description: >-
+      Standard TZ database name, e.g. Europe/Warsaw, America/New_York.
+      Affects log timestamps and the auto-ripper schedule.
+
+  display_width:
+    name: VNC display width (px)
+    description: Width of the virtual desktop used by the web UI.
+
+  display_height:
+    name: VNC display height (px)
+    description: Height of the virtual desktop used by the web UI.
+
+  vnc_password:
+    name: VNC password
+    description: >-
+      Password for direct VNC connections (port 5900). Leave empty to
+      disable VNC authentication (only safe behind a firewall).
+
+  auto_disc_ripper:
+    name: Enable auto disc ripper
+    description: >-
+      Automatically start ripping when a disc is inserted.
+      No need to open the UI.
+
+  auto_disc_ripper_eject:
+    name: Eject disc after rip
+    description: Eject the disc tray when ripping completes.
+
+  auto_disc_ripper_parallel_rip:
+    name: Parallel ripping
+    description: Rip all drives simultaneously (if you have multiple drives).
+
+  auto_disc_ripper_interval:
+    name: Drive poll interval (seconds)
+    description: How often (in seconds) the auto-ripper checks for a new disc.
+
+  auto_disc_ripper_min_title_length:
+    name: Minimum title length (seconds)
+    description: >-
+      Titles shorter than this value are skipped by the auto-ripper.
+      Default 600 = 10 minutes. Raise to skip trailers; lower to capture
+      short films.
+
+  auto_disc_ripper_bd_mode:
+    name: Blu-ray rip mode
+    description: >-
+      mkv = rip to MKV files (recommended). backup = full disc backup.
+
+  auto_disc_ripper_force_unique_output_dir:
+    name: Force unique output directory
+    description: >-
+      Place each rip in its own subdirectory even if the title already exists,
+      preventing overwrites.
+
+  output_path:
+    name: Output path
+    description: >-
+      Absolute container path where rips are saved.
+      /media/makemkv maps to your HA media folder.
+      /share/makemkv maps to /config/share/makemkv on the host.
+
+  keep_app_running:
+    name: Restart on crash
+    description: Automatically restart MakeMKV if it crashes unexpectedly.
+
+  app_niceness:
+    name: CPU priority (niceness)
+    description: >-
+      Linux niceness value: -20 (highest priority) to 19 (lowest).
+      0 is neutral. Set to 10-19 to keep ripping in the background.
+
+  enable_cjk_font:
+    name: Enable CJK fonts
+    description: >-
+      Install Chinese/Japanese/Korean fonts. Needed for discs with
+      CJK metadata or subtitles.
+
+  dark_mode:
+    name: Dark mode
+    description: Use a dark theme in the web UI.
+
+  log_level:
+    name: Log level
+    description: >-
+      Verbosity of add-on logs.
+      info = normal. debug / trace = verbose troubleshooting output.
+
+network:
+  5800/tcp: MakeMKV Web UI (VNC over HTTP — also used for Ingress)

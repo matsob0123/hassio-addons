@@ -1,0 +1,84 @@
+##
+## MakeMKV Wrapper — AppArmor profile
+## Ported by matsob0123
+##
+## Updated for s6-overlay v3 per:
+## https://developers.home-assistant.io/blog/2022/05/12/s6-overlay-base-images/
+##
+## Required s6-overlay v3 paths added:
+##   /init, /package/**, /command/**, /run/{s6,s6-rc*,service}/**
+##
+## ⚠️  PLEASE CHANGE THE VERSION NUMBER IN config.yaml TO HIGHER THAN 2.0.3
+##
+
+#include <tunables/global>
+
+profile makemkv_wrapper flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/nameservice>
+
+  ## ── Capabilities ─────────────────────────────────────────────────────────
+  capability dac_read_search,
+  capability sys_admin,
+  capability setuid,
+  capability setgid,
+  capability chown,
+  capability fowner,
+  capability fsetid,
+
+  ## ── s6-overlay v3 required paths (from official HA migration docs) ────────
+  /init                          ix,
+  /bin/**                        ix,
+  /usr/bin/**                    ix,
+  /run/{s6,s6-rc*,service}/**   ix,
+  /package/**                    ix,
+  /command/**                    ix,
+  /etc/services.d/**            rwix,
+  /etc/cont-init.d/**           rwix,
+  /etc/cont-finish.d/**         rwix,
+  /run/{,**}                    rwk,
+  /dev/tty                       rw,
+
+  ## ── Standard filesystem ──────────────────────────────────────────────────
+  /sbin/**   rix,
+  /lib/**     mr,
+  /lib64/**   mr,
+  /etc/**      r,
+  /tmp/**     rw,
+
+  ## ── Writeable add-on mounts ──────────────────────────────────────────────
+  /config/** rw,
+  /media/**  rw,
+  /share/**  rw,
+
+  ## ── Optical drives ───────────────────────────────────────────────────────
+  /dev/sr[0-9]*  rw,
+  /dev/sg[0-9]*  rw,
+  /dev/dvd*      rw,
+  /dev/cdrom*    rw,
+  /dev/disk/**    r,
+
+  ## ── VNC / X11 ────────────────────────────────────────────────────────────
+  /tmp/.X[0-9]*-lock  rw,
+  /tmp/.X11-unix/**   rw,
+  network tcp,
+  network unix,
+
+  ## ── Proc & sys (limited) ─────────────────────────────────────────────────
+  /proc/sys/kernel/shmmax  r,
+  /proc/*/fd/               r,
+  /proc/*/maps              r,
+  /proc/*/status            r,
+  /proc/cpuinfo             r,
+  /proc/meminfo             r,
+  /sys/bus/scsi/**          r,
+  /sys/class/block/**       r,
+
+  ## ── Deny dangerous writes ────────────────────────────────────────────────
+  deny /proc/sys/kernel/modprobe  w,
+  deny /proc/sysrq-trigger        w,
+  deny /sys/firmware/**           w,
+  deny @{HOME}/.ssh/**           rw,
+}
