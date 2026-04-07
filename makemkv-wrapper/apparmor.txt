@@ -1,0 +1,75 @@
+##
+## MakeMKV Wrapper — AppArmor profile
+## Ported by matsob0123
+##
+## This profile allows jlesage/docker-makemkv to:
+##   - Access optical disc devices (/dev/sr*, /dev/sg*)
+##   - Write to /media, /share, /config mount points
+##   - Use VNC / X11 sockets
+##   - Run the makemkv binary with the required privileges
+##
+## It denies everything else, improving isolation of the add-on.
+##
+
+#include <tunables/global>
+
+profile makemkv_wrapper flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/nameservice>
+
+  ## ── Capabilities ────────────────────────────────────────────────────────────
+  capability dac_read_search,
+  capability sys_admin,
+  capability setuid,
+  capability setgid,
+  capability chown,
+  capability fowner,
+  capability fsetid,
+
+  ## ── Filesystem — read-only system paths ─────────────────────────────────────
+  / r,
+  /bin/**   rix,
+  /sbin/**  rix,
+  /usr/**   rix,
+  /lib/**   mr,
+  /lib64/** mr,
+  /etc/**   r,
+  /tmp/**   rw,
+
+  ## ── Filesystem — writeable add-on mounts ────────────────────────────────────
+  /config/** rw,
+  /media/**  rw,
+  /share/**  rw,
+  /addon_configs/makemkv_wrapper/** rw,
+
+  ## ── Optical drives ──────────────────────────────────────────────────────────
+  /dev/sr[0-9]*  rw,
+  /dev/sg[0-9]*  rw,
+  /dev/dvd*      rw,
+  /dev/cdrom*    rw,
+  /dev/disk/**   r,
+
+  ## ── VNC / X11 ────────────────────────────────────────────────────────────────
+  /tmp/.X[0-9]*-lock  rw,
+  /tmp/.X11-unix/**   rw,
+  network tcp,
+  network unix,
+
+  ## ── Proc & sys (limited) ─────────────────────────────────────────────────────
+  /proc/sys/kernel/shmmax r,
+  /proc/*/fd/       r,
+  /proc/*/maps      r,
+  /proc/*/status    r,
+  /proc/cpuinfo     r,
+  /proc/meminfo     r,
+  /sys/bus/scsi/**  r,
+  /sys/class/block/** r,
+
+  ## ── Deny dangerous paths ─────────────────────────────────────────────────────
+  deny /proc/sys/kernel/modprobe w,
+  deny /proc/sysrq-trigger        w,
+  deny /sys/firmware/**           w,
+  deny @{HOME}/.ssh/**            rw,
+}

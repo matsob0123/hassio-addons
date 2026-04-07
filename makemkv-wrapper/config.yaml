@@ -1,0 +1,142 @@
+##
+## MakeMKV Wrapper — Home Assistant Add-on
+## Ported and maintained by matsob0123
+## Original container: https://github.com/jlesage/docker-makemkv
+##
+
+name: MakeMKV Wrapper
+version: "2.0.0"
+slug: makemkv_wrapper
+description: >-
+  Rip DVDs and Blu-rays via jlesage/docker-makemkv.
+  Full web UI with VNC, auto-ripper, AppArmor hardening and
+  configurable output paths — all from the HA sidebar.
+url: https://github.com/matsob0123/hass-makemkv
+codenotary: false
+
+##──────────────────────────────────────────────────────────────────────────────
+## Architectures
+##──────────────────────────────────────────────────────────────────────────────
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+
+##──────────────────────────────────────────────────────────────────────────────
+## Startup & boot
+##──────────────────────────────────────────────────────────────────────────────
+startup: services
+boot: auto
+init: false
+
+##──────────────────────────────────────────────────────────────────────────────
+## Ingress (sidebar)
+##──────────────────────────────────────────────────────────────────────────────
+ingress: true
+ingress_port: 5800
+ingress_stream: true
+panel_icon: mdi:disc
+panel_title: MakeMKV
+
+##──────────────────────────────────────────────────────────────────────────────
+## Storage maps
+##──────────────────────────────────────────────────────────────────────────────
+map:
+  - config:rw           # /config  — persistent add-on config
+  - media:rw            # /media   — default output target
+  - share:rw            # /share   — optional second output target
+  - addon_config:rw     # /addon_configs/makemkv_wrapper — private state
+
+##──────────────────────────────────────────────────────────────────────────────
+## Host devices — optical drives
+## Extend this list if you have more than one drive (sr1, sr2, …)
+##──────────────────────────────────────────────────────────────────────────────
+devices:
+  - /dev/sr0
+
+##──────────────────────────────────────────────────────────────────────────────
+## Privileges — only what jlesage's container really needs
+##──────────────────────────────────────────────────────────────────────────────
+privileged:
+  - SYS_ADMIN
+  - DAC_READ_SEARCH
+
+##──────────────────────────────────────────────────────────────────────────────
+## AppArmor (leave empty string to use the bundled profile)
+##──────────────────────────────────────────────────────────────────────────────
+apparmor: true
+
+##──────────────────────────────────────────────────────────────────────────────
+## Audio — not needed but harmless; remove if issues arise
+##──────────────────────────────────────────────────────────────────────────────
+audio: false
+
+##──────────────────────────────────────────────────────────────────────────────
+## User-facing options (edit in HA UI or options.json)
+##──────────────────────────────────────────────────────────────────────────────
+options:
+  ## ── MakeMKV license key ────────────────────────────────────────────────────
+  makemkv_key: ""           # leave empty to use the rolling beta key
+
+  ## ── Container identity ─────────────────────────────────────────────────────
+  puid: 1000
+  pgid: 1000
+  umask: "0022"
+  timezone: "Europe/Warsaw"
+
+  ## ── Display (VNC) ──────────────────────────────────────────────────────────
+  display_width: 1280
+  display_height: 768
+  vnc_password: ""          # empty = no VNC password
+
+  ## ── Auto-disc-ripper ────────────────────────────────────────────────────────
+  auto_disc_ripper: false
+  auto_disc_ripper_eject: true
+  auto_disc_ripper_parallel_rip: false
+  auto_disc_ripper_interval: 5
+  auto_disc_ripper_min_title_length: 600
+  auto_disc_ripper_bd_mode: mkv    # mkv | backup
+  auto_disc_ripper_force_unique_output_dir: false
+
+  ## ── Output path ─────────────────────────────────────────────────────────────
+  output_path: /media/makemkv    # absolute path inside the container
+
+  ## ── Misc ────────────────────────────────────────────────────────────────────
+  keep_app_running: true
+  app_niceness: 0
+  enable_cjk_font: false
+  dark_mode: false
+  log_level: info              # info | debug | trace
+
+##──────────────────────────────────────────────────────────────────────────────
+## Schema — validation rules for each option
+##──────────────────────────────────────────────────────────────────────────────
+schema:
+  makemkv_key: str?
+  puid: int(0,65534)
+  pgid: int(0,65534)
+  umask: "str?"
+  timezone: str
+  display_width: int(320,7680)
+  display_height: int(240,4320)
+  vnc_password: "password?"
+  auto_disc_ripper: bool
+  auto_disc_ripper_eject: bool
+  auto_disc_ripper_parallel_rip: bool
+  auto_disc_ripper_interval: int(1,3600)
+  auto_disc_ripper_min_title_length: int(0,99999)
+  auto_disc_ripper_bd_mode:
+    - mkv
+    - backup
+  auto_disc_ripper_force_unique_output_dir: bool
+  output_path: str
+  keep_app_running: bool
+  app_niceness: int(-20,19)
+  enable_cjk_font: bool
+  dark_mode: bool
+  log_level:
+    - info
+    - debug
+    - trace

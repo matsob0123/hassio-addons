@@ -1,0 +1,7 @@
+#!/usr/bin/execlineb -S0
+##
+## /etc/services.d/makemkv/finish
+## Called when the service exits. Brings the whole container down so
+## Home Assistant can restart it cleanly.
+##
+/run/s6/basedir/bin/s6-svscanctl -t /run/s6/services
