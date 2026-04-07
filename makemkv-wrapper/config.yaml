@@ -5,24 +5,21 @@
 ##
 
 name: MakeMKV Wrapper
-version: "2.0.0"
+version: "2.0.1"
 slug: makemkv_wrapper
 description: >-
   Rip DVDs and Blu-rays via jlesage/docker-makemkv.
   Full web UI with VNC, auto-ripper, AppArmor hardening and
   configurable output paths — all from the HA sidebar.
 url: https://github.com/matsob0123/hass-makemkv
-codenotary: false
 
 ##──────────────────────────────────────────────────────────────────────────────
 ## Architectures
+## Note: armhf, armv7, i386 removed — deprecated and unsupported by supervisor
 ##──────────────────────────────────────────────────────────────────────────────
 arch:
   - aarch64
   - amd64
-  - armhf
-  - armv7
-  - i386
 
 ##──────────────────────────────────────────────────────────────────────────────
 ## Startup & boot
@@ -42,12 +39,12 @@ panel_title: MakeMKV
 
 ##──────────────────────────────────────────────────────────────────────────────
 ## Storage maps
+## Note: addon_config removed — ignored when config is present (supervisor rule)
 ##──────────────────────────────────────────────────────────────────────────────
 map:
   - config:rw           # /config  — persistent add-on config
   - media:rw            # /media   — default output target
   - share:rw            # /share   — optional second output target
-  - addon_config:rw     # /addon_configs/makemkv_wrapper — private state
 
 ##──────────────────────────────────────────────────────────────────────────────
 ## Host devices — optical drives
@@ -97,7 +94,7 @@ options:
   auto_disc_ripper_parallel_rip: false
   auto_disc_ripper_interval: 5
   auto_disc_ripper_min_title_length: 600
-  auto_disc_ripper_bd_mode: mkv    # mkv | backup
+  auto_disc_ripper_bd_mode: "mkv"    # mkv | backup
   auto_disc_ripper_force_unique_output_dir: false
 
   ## ── Output path ─────────────────────────────────────────────────────────────
@@ -108,35 +105,31 @@ options:
   app_niceness: 0
   enable_cjk_font: false
   dark_mode: false
-  log_level: info              # info | debug | trace
+  log_level: "info"              # info | debug | trace
 
 ##──────────────────────────────────────────────────────────────────────────────
 ## Schema — validation rules for each option
+## Enum values must use match() — bare list items are not valid in supervisor
 ##──────────────────────────────────────────────────────────────────────────────
 schema:
   makemkv_key: str?
   puid: int(0,65534)
   pgid: int(0,65534)
-  umask: "str?"
+  umask: str?
   timezone: str
   display_width: int(320,7680)
   display_height: int(240,4320)
-  vnc_password: "password?"
+  vnc_password: password?
   auto_disc_ripper: bool
   auto_disc_ripper_eject: bool
   auto_disc_ripper_parallel_rip: bool
   auto_disc_ripper_interval: int(1,3600)
   auto_disc_ripper_min_title_length: int(0,99999)
-  auto_disc_ripper_bd_mode:
-    - mkv
-    - backup
+  auto_disc_ripper_bd_mode: match(mkv|backup)
   auto_disc_ripper_force_unique_output_dir: bool
   output_path: str
   keep_app_running: bool
   app_niceness: int(-20,19)
   enable_cjk_font: bool
   dark_mode: bool
-  log_level:
-    - info
-    - debug
-    - trace
+  log_level: match(info|debug|trace)
