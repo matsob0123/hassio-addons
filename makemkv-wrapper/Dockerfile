@@ -41,13 +41,14 @@ COPY rootfs /
 
 ##──────────────────────────────────────────────────────────────────────────────
 ## Permissions — ensure all s6 scripts are executable
-## Also re-apply +x to /init in case the base image has it as a script
+## NOTE: Do NOT touch /init — in s6-overlay v3 it is a symlink to a binary
+## managed entirely by the base image. Chmoding it causes "can't open /init"
+## errors because the symlink target loses its execute bit on some runtimes.
 ##──────────────────────────────────────────────────────────────────────────────
 RUN chmod a+x \
         /etc/cont-init.d/10-makemkv-options.sh \
         /etc/services.d/makemkv/run \
-        /etc/services.d/makemkv/finish \
-    && chmod a+x /init 2>/dev/null || true
+        /etc/services.d/makemkv/finish
 
 ##──────────────────────────────────────────────────────────────────────────────
 ## Exposed port (ingress proxy connects here)

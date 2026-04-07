@@ -4,4 +4,7 @@
 ## Called when the service exits. Brings the whole container down so
 ## Home Assistant can restart it cleanly.
 ##
-/run/s6/basedir/bin/s6-svscanctl -t /run/s6/services
+## s6-overlay v3: scan dir is /run/service; binary is at /command/s6-svscanctl.
+## The old /run/s6/basedir path only exists in s6-overlay v2.
+##
+/command/s6-svscanctl -t /run/service
