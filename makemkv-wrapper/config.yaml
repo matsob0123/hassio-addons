@@ -1,11 +1,12 @@
 ##
 ## MakeMKV Wrapper — Home Assistant Add-on
-## Ported and maintained by matsob0123
+## Ported and kind of maintained by matsob0123
 ## Original container: https://github.com/jlesage/docker-makemkv
+## Remember to change the version every fix & update!
 ##
 
 name: MakeMKV Wrapper
-version: "2.0.1"
+version: "2.0.2"
 slug: makemkv_wrapper
 description: >-
   Rip DVDs and Blu-rays via jlesage/docker-makemkv.

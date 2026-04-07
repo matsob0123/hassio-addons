@@ -1,7 +1,7 @@
 ##
 ## MakeMKV Wrapper — Dockerfile
 ## Ported by matsob0123
-## Base: jlesage/docker-makemkv (multi-arch)
+## Base: jlesage/docker-makemkv (multi-arch, s6-overlay v3)
 ##
 
 ARG BUILD_FROM=jlesage/makemkv:latest
@@ -14,7 +14,7 @@ FROM ${BUILD_FROM}
 LABEL \
     io.hass.name="MakeMKV Wrapper" \
     io.hass.description="Rip DVDs & Blu-rays via jlesage/docker-makemkv in Home Assistant" \
-    io.hass.arch="aarch64|amd64|armhf|armv7|i386" \
+    io.hass.arch="aarch64|amd64" \
     io.hass.type="addon" \
     io.hass.version="${BUILD_VERSION}" \
     maintainer="matsob0123" \
@@ -25,9 +25,9 @@ LABEL \
 
 ##──────────────────────────────────────────────────────────────────────────────
 ## Runtime packages (minimal — the jlesage image already has makemkv)
+## bash and jq needed to parse HA options.json; tzdata for timezone support
+## s6-overlay is already present in the jlesage base image
 ##──────────────────────────────────────────────────────────────────────────────
-# Install bash and jq so run.sh can parse HA options.json
-# s6-overlay is already present in the jlesage base image.
 RUN apk add --no-cache \
         bash \
         jq \
@@ -35,17 +35,19 @@ RUN apk add --no-cache \
     && rm -rf /var/cache/apk/*
 
 ##──────────────────────────────────────────────────────────────────────────────
-## Copy add-on scripts
+## Copy add-on scripts into the container filesystem
 ##──────────────────────────────────────────────────────────────────────────────
 COPY rootfs /
 
 ##──────────────────────────────────────────────────────────────────────────────
-## Permissions
+## Permissions — ensure all s6 scripts are executable
+## Also re-apply +x to /init in case the base image has it as a script
 ##──────────────────────────────────────────────────────────────────────────────
 RUN chmod a+x \
         /etc/cont-init.d/10-makemkv-options.sh \
         /etc/services.d/makemkv/run \
-        /etc/services.d/makemkv/finish
+        /etc/services.d/makemkv/finish \
+    && chmod a+x /init 2>/dev/null || true
 
 ##──────────────────────────────────────────────────────────────────────────────
 ## Exposed port (ingress proxy connects here)
@@ -62,3 +64,9 @@ ARG BUILD_NAME
 ARG BUILD_REF
 ARG BUILD_REPOSITORY
 ARG BUILD_VERSION
+
+##──────────────────────────────────────────────────────────────────────────────
+## Entrypoint — s6-overlay init (inherited from jlesage base image)
+## Declared explicitly so HA supervisor always runs the correct PID 1
+##──────────────────────────────────────────────────────────────────────────────
+ENTRYPOINT ["/init"]
