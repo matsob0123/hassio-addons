@@ -9,7 +9,7 @@
 ##
 
 name: MakeMKV Wrapper
-version: "2.0.4"
+version: "2.0.5"
 slug: makemkv_wrapper
 description: >-
   Rip DVDs and Blu-rays via jlesage/docker-makemkv.
