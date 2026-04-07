@@ -1,7 +1,7 @@
 #!/usr/bin/execlineb -P
 ##
 ## /etc/services.d/makemkv/run
-## s6 service definition — starts the jlesage startapp process
+## s6-overlay v3 service definition — starts jlesage's startapp process
 ## Ported by matsob0123
 ##
 with-contenv

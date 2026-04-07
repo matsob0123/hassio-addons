@@ -1,15 +1,73 @@
 # Changelog
 
-## [Unreleased] — bug fixes
-### Fixed
-- **`/bin/sh: can't open '/init': Permission denied`** — Removed `chmod a+x /init`
-  from the Dockerfile. In s6-overlay v3, `/init` is a symlink to a binary owned
-  by the base image. Running `chmod` on it inside a `RUN` layer corrupts the
-  symlink target's execute bit in certain OCI runtimes (notably the Home
-  Assistant supervisor), causing PID 1 to fail immediately at container start.
-  The `|| true` suppressed the build-time error but the damage was already done.
-- **`finish` script used s6-overlay v2 paths** — `/run/s6/basedir/bin/s6-svscanctl`
-  and `/run/s6/services` do not exist in s6-overlay v3 (which the `jlesage/makemkv`
-  base image ships). Corrected to `/command/s6-svscanctl` and `/run/service`.
+All notable changes to MakeMKV Wrapper will be documented here.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-$(cat /home/claude/makemkv-wrapper/makemkv-wrapper/CHANGELOG.md 2>/dev/null || echo "")
+---
+
+## ⚠️ NOTE TO MAINTAINER
+**Please change the `version` field in `config.yaml` to a value higher than `2.0.3`**
+every time you publish a fix or update. Home Assistant uses the version number to
+detect updates and notify users. If the version does not change, users will never
+see the update in their dashboard.
+
+---
+
+## [2.0.3] — Current release (please bump this version!)
+
+### Fixed
+- **`/bin/sh: can't open '/init': Permission denied`** (critical boot failure)
+  - **Root cause:** The Dockerfile contained `chmod a+x /init` which is fatal
+    for s6-overlay v3. In v3, `/init` is a symlink whose target binary is owned
+    by the `jlesage/makemkv` base image. Running `chmod` on it inside a Docker
+    `RUN` layer corrupts the execute bit on the symlink target within the OCI
+    layer. The `2>/dev/null || true` silently hid the error at build time, but
+    the container crashed immediately on every start at runtime.
+  - **Fix:** Removed the `chmod /init` line entirely. The base image owns `/init`
+    and it must never be touched.
+
+- **`init: false` is now explicitly documented in `config.yaml`**
+  - s6-overlay v3 requires `init: false` in the add-on config so the HA supervisor
+    does not inject Docker's default `tini` init in front of s6. If `tini` runs
+    first, s6 detects it is not PID 1 and refuses to start with:
+    `s6-overlay-suexec: fatal: can only run as pid 1`
+  - Reference: https://developers.home-assistant.io/blog/2022/05/12/s6-overlay-base-images/
+
+- **`finish` script now uses correct s6-overlay v3 halt command**
+  - Old (broken): `/run/s6/basedir/bin/s6-svscanctl -t /run/s6/services`
+  - New (correct): `/run/s6/basedir/bin/halt`
+  - The old paths are s6-overlay v2. The HA developer docs explicitly state the
+    correct v3 replacement is `/run/s6/basedir/bin/halt`.
+
+- **AppArmor profile updated for s6-overlay v3**
+  - Added required paths: `/init ix`, `/package/**`, `/command/**`,
+    `/run/{s6,s6-rc*,service}/**`, `/etc/cont-finish.d/**`
+  - Without these the AppArmor profile blocks s6 from executing its own binaries,
+    causing subtle permission failures even when the container appears to start.
+
+- **`config.yaml` map syntax corrected**
+  - Old: `- config:rw` (shorthand, unreliable across supervisor versions)
+  - New: `type: media / read_only: false` (explicit object syntax per current docs)
+
+- **Schema enum validation fixed**
+  - `auto_disc_ripper_bd_mode` and `log_level` now use `list(a|b)` instead of
+    `match(a|b)`. The `list()` type renders a dropdown in the HA UI; `match()`
+    is a regex validator with no UI widget.
+
+- **Watchdog added**
+  - `watchdog: "http://[HOST]:[PORT:5800]/"` — supervisor automatically restarts
+    the add-on if the web UI becomes unreachable.
+
+- **Port translation added to `translations/en.yaml`**
+  - `network:` section documents the 5800/tcp port in the HA UI.
+
+---
+
+## [2.0.2] — Previous release
+
+- Initial port of jlesage/docker-makemkv to Home Assistant add-on format
+- Added ingress support (sidebar web UI)
+- Added auto disc ripper options
+- Added VNC password support
+- Added CJK font option
+- Added dark mode option

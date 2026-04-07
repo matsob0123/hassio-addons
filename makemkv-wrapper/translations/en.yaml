@@ -3,6 +3,8 @@
 ## Home Assistant UI strings for MakeMKV Wrapper options
 ## Ported by matsob0123
 ##
+## ⚠️  PLEASE CHANGE THE VERSION NUMBER IN config.yaml TO HIGHER THAN 2.0.3
+##
 
 configuration:
   makemkv_key:
@@ -76,8 +78,7 @@ configuration:
   auto_disc_ripper_bd_mode:
     name: Blu-ray rip mode
     description: >-
-      mkv = rip to MKV files. backup = full disc backup. mkv is recommended
-      for most users.
+      mkv = rip to MKV files (recommended). backup = full disc backup.
 
   auto_disc_ripper_force_unique_output_dir:
     name: Force unique output directory
@@ -100,7 +101,7 @@ configuration:
     name: CPU priority (niceness)
     description: >-
       Linux niceness value: -20 (highest priority) to 19 (lowest).
-      0 is neutral. Set to 10–19 to keep ripping in the background.
+      0 is neutral. Set to 10-19 to keep ripping in the background.
 
   enable_cjk_font:
     name: Enable CJK fonts
@@ -114,4 +115,9 @@ configuration:
 
   log_level:
     name: Log level
-    description: Verbosity of add-on logs. Use debug or trace for troubleshooting.
+    description: >-
+      Verbosity of add-on logs.
+      info = normal. debug / trace = verbose troubleshooting output.
+
+network:
+  5800/tcp: MakeMKV Web UI (VNC over HTTP — also used for Ingress)

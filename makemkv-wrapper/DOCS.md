@@ -1,190 +1,65 @@
-# MakeMKV Wrapper — Detailed Documentation
+# MakeMKV Wrapper — Documentation
 
-This file is shown in the **Documentation** tab of the add-on in Home Assistant.
+> **⚠️ Maintainer note:** Please change the `version` field in `config.yaml`
+> to a value **higher than `2.0.3`** before publishing any update. Home Assistant
+> uses the version number to detect and offer updates to users.
 
----
+## Overview
 
-## Option reference
+MakeMKV Wrapper is a Home Assistant add-on that runs
+[jlesage/docker-makemkv](https://github.com/jlesage/docker-makemkv) inside
+the HA supervisor. It provides:
 
-### `makemkv_key`
-
-Your personal MakeMKV license key (format: `T-XXXXXX...`).
-
-If left empty, the container will automatically retrieve the latest rolling
-**beta key** from the MakeMKV forum. The beta key is valid for ~30 days and
-is refreshed by the container on start.
-
-> **Tip:** A personal key is required for Blu-ray discs once MakeMKV leaves
-> beta. DVDs work without a key.
+- A full MakeMKV GUI accessible from the HA sidebar (via Ingress)
+- An automatic disc ripper that starts ripping the moment you insert a disc
+- Configurable output paths (media folder, share folder, or custom path)
+- AppArmor hardening
 
 ---
 
-### `puid` / `pgid`
+## First-time setup
 
-The Unix user ID and group ID under which MakeMKV runs inside the container.
-
-These should match the owner of your output directory so files are written
-with the correct permissions. On most systems the first user is `1000:1000`.
-
-Find your IDs:
-```bash
-id
-```
+1. Install the add-on from your repository.
+2. Plug in your USB or internal optical drive.
+3. Go to **Configuration** and set at minimum:
+   - **Output path** — where ripped files are saved (default: `/media/makemkv`)
+   - **MakeMKV license key** — your personal key or leave blank for the beta key
+4. Click **Save**, then **Start**.
+5. Open the web UI from the sidebar (**MakeMKV** panel) or via **Open Web UI**.
 
 ---
 
-### `umask`
+## Configuration options
 
-Default file permission mask for created files.  
-`0022` → files are rw-r--r-- (owner read-write, group/others read-only).  
-`0002` → files are rw-rw-r-- (owner and group read-write).
-
----
-
-### `timezone`
-
-Standard TZ database name. Examples:
-- `Europe/Warsaw`
-- `America/New_York`
-- `Asia/Tokyo`
-
-Full list: <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
-
----
-
-### `display_width` / `display_height`
-
-Resolution of the virtual X11 desktop rendered for the web UI.  
-Default `1280×768` is fine for most screens. Increase for high-DPI displays.
-
----
-
-### `vnc_password`
-
-Password required for **direct VNC connections** on port 5900.  
-Leave empty to disable VNC authentication (only safe behind a firewall or VPN).
-
-The web UI (ingress, port 5800) is always protected by Home Assistant
-authentication — this option only affects raw VNC clients.
-
----
-
-### `auto_disc_ripper`
-
-When `true`, MakeMKV will start ripping as soon as a disc is inserted.
-No need to open the browser UI.
-
-Ripped files are placed in `output_path`.
-
----
-
-### `auto_disc_ripper_eject`
-
-Eject the disc tray automatically when ripping completes.  
-Recommended: `true`.
-
----
-
-### `auto_disc_ripper_parallel_rip`
-
-If you have multiple optical drives, set this to `true` to rip all of
-them simultaneously. With a single drive this has no effect.
-
----
-
-### `auto_disc_ripper_interval`
-
-How often (in seconds) the auto-ripper polls the drive for a new disc.  
-Lower = faster detection, marginally higher CPU use.  
-Default `5` seconds is a good balance.
-
----
-
-### `auto_disc_ripper_min_title_length`
-
-Titles shorter than this value (in seconds) are skipped.  
-Default `600` (10 minutes) skips trailers, copyright warnings, menus.  
-Set to `0` to rip everything.
-
----
-
-### `auto_disc_ripper_bd_mode`
-
-How Blu-ray discs are ripped in auto mode:
-
-| Value | Description |
-|-------|-------------|
-| `mkv` | Convert to individual MKV files (recommended) |
-| `backup` | Full disc backup (preserves menus, requires more space) |
-
----
-
-### `auto_disc_ripper_force_unique_output_dir`
-
-When `true`, each rip is placed in a new uniquely-named subdirectory,
-preventing accidental overwrites when ripping the same disc twice.
-
----
-
-### `output_path`
-
-Absolute path **inside the container** where ripped files are saved.
-
-| Container path | Visible on host |
-|---------------|----------------|
-| `/media/makemkv` | Home Assistant media library |
-| `/share/makemkv` | `/config/share/makemkv` on host |
-
-You can use any path as long as it is inside one of the mapped folders
-(`/media`, `/share`, `/config`).
-
----
-
-### `keep_app_running`
-
-When `true`, the container automatically restarts MakeMKV if it crashes.  
-Recommended: `true`.
-
----
-
-### `app_niceness`
-
-Linux CPU scheduling priority. Range: `-20` (highest) to `19` (lowest).  
-`0` = normal.  
-Setting this to `10` or higher keeps ripping from affecting other services
-on a busy Home Assistant host.
-
----
-
-### `enable_cjk_font`
-
-Install additional fonts for Chinese, Japanese, and Korean characters.  
-Enable if disc titles or subtitles appear as boxes/squares.
-
----
-
-### `dark_mode`
-
-Use a dark colour theme in the web UI.
-
----
-
-### `log_level`
-
-| Level | When to use |
-|-------|-------------|
-| `info` | Normal operation |
-| `debug` | More verbose — use for troubleshooting |
-| `trace` | Very verbose — use when filing a bug report |
-
-Log output is visible in **Settings → Add-ons → MakeMKV Wrapper → Log**.
+| Option | Default | Description |
+|--------|---------|-------------|
+| `makemkv_key` | _(empty)_ | Personal MakeMKV key (T-...). Empty = rolling beta key. |
+| `puid` | `1000` | UID that MakeMKV runs as inside the container. |
+| `pgid` | `1000` | GID that MakeMKV runs as inside the container. |
+| `umask` | `0022` | File creation mask for ripped files. |
+| `timezone` | `Europe/Warsaw` | TZ name (e.g. `America/New_York`). |
+| `display_width` | `1280` | Virtual desktop width in pixels. |
+| `display_height` | `768` | Virtual desktop height in pixels. |
+| `vnc_password` | _(empty)_ | VNC password. Empty = no password. |
+| `auto_disc_ripper` | `false` | Rip automatically when disc is inserted. |
+| `auto_disc_ripper_eject` | `true` | Eject disc after ripping. |
+| `auto_disc_ripper_parallel_rip` | `false` | Rip multiple drives at once. |
+| `auto_disc_ripper_interval` | `5` | How often (seconds) to poll for a disc. |
+| `auto_disc_ripper_min_title_length` | `600` | Skip titles shorter than this (seconds). |
+| `auto_disc_ripper_bd_mode` | `mkv` | `mkv` or `backup` for Blu-rays. |
+| `auto_disc_ripper_force_unique_output_dir` | `false` | Never overwrite existing rips. |
+| `output_path` | `/media/makemkv` | Container path for ripped files. |
+| `keep_app_running` | `true` | Restart MakeMKV if it crashes. |
+| `app_niceness` | `0` | CPU priority: -20 (highest) to 19 (lowest). |
+| `enable_cjk_font` | `false` | Install CJK fonts for Asian disc metadata. |
+| `dark_mode` | `false` | Dark theme for the web UI. |
+| `log_level` | `info` | Log verbosity: `info`, `debug`, or `trace`. |
 
 ---
 
 ## Multiple optical drives
 
-By default only `/dev/sr0` is exposed. To add more drives, edit
-`config.yaml` in the add-on folder and add entries to `devices`:
+Add extra device entries in `config.yaml` under `devices:`:
 
 ```yaml
 devices:
@@ -192,11 +67,39 @@ devices:
   - /dev/sr1
 ```
 
-Then **rebuild** the add-on.
+Enable `auto_disc_ripper_parallel_rip: true` to rip them simultaneously.
 
 ---
 
-## Support & bugs
+## Output paths
 
-- GitHub: <https://github.com/matsob0123/hass-makemkv/issues>
-- Upstream container issues: <https://github.com/jlesage/docker-makemkv/issues>
+| Container path | Host path |
+|----------------|-----------|
+| `/media/makemkv` | HA media folder |
+| `/share/makemkv` | `/config/share/makemkv` |
+
+---
+
+## Troubleshooting
+
+### Container won't start / `/init` permission error
+Make sure `init: false` is present in `config.yaml`. This add-on uses
+s6-overlay v3 (via the jlesage base image) which must run as PID 1. If the HA
+supervisor injects its own init process first, s6 refuses to start.
+
+### Drive not detected
+Check that `/dev/sr0` (or your drive node) exists on the host:
+```bash
+ls -la /dev/sr*
+```
+Add the correct device path to `config.yaml` under `devices:`.
+
+### Permission errors on output folder
+Set `puid` and `pgid` to match the owner of your output folder:
+```bash
+ls -lan /media
+```
+
+### Enable verbose logging
+Set `log_level: debug` or `log_level: trace` in Configuration, then restart
+and check the add-on log panel.

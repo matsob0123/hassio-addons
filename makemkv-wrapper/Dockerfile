@@ -3,6 +3,9 @@
 ## Ported by matsob0123
 ## Base: jlesage/docker-makemkv (multi-arch, s6-overlay v3)
 ##
+## ⚠️  PLEASE CHANGE THE VERSION NUMBER IN config.yaml TO HIGHER THAN 2.0.3
+##     before rebuilding and publishing this add-on!
+##
 
 ARG BUILD_FROM=jlesage/makemkv:latest
 # shellcheck disable=SC2034
@@ -24,9 +27,10 @@ LABEL \
     org.opencontainers.image.licenses="MIT"
 
 ##──────────────────────────────────────────────────────────────────────────────
-## Runtime packages (minimal — the jlesage image already has makemkv)
-## bash and jq needed to parse HA options.json; tzdata for timezone support
-## s6-overlay is already present in the jlesage base image
+## Runtime packages
+## bash and jq are needed to parse HA options.json
+## tzdata is needed for timezone support
+## s6-overlay is already present in the jlesage base image — do NOT reinstall it
 ##──────────────────────────────────────────────────────────────────────────────
 RUN apk add --no-cache \
         bash \
@@ -40,10 +44,18 @@ RUN apk add --no-cache \
 COPY rootfs /
 
 ##──────────────────────────────────────────────────────────────────────────────
-## Permissions — ensure all s6 scripts are executable
-## NOTE: Do NOT touch /init — in s6-overlay v3 it is a symlink to a binary
-## managed entirely by the base image. Chmoding it causes "can't open /init"
-## errors because the symlink target loses its execute bit on some runtimes.
+## Permissions — only chmod the scripts WE added
+##
+## ⚠️  DO NOT chmod /init — in s6-overlay v3, /init is a symlink managed
+##     entirely by the jlesage base image. Running chmod on it corrupts the
+##     symlink target's execute bit inside the OCI layer, causing the
+##     container to die immediately with:
+##
+##         /bin/sh: can't open '/init': Permission denied
+##
+##     The Home Assistant supervisor passes init: false in config.yaml which
+##     disables Docker's own tini init. s6 then MUST own PID 1 through its
+##     own /init entrypoint. Any interference with that file is fatal.
 ##──────────────────────────────────────────────────────────────────────────────
 RUN chmod a+x \
         /etc/cont-init.d/10-makemkv-options.sh \
@@ -67,7 +79,8 @@ ARG BUILD_REPOSITORY
 ARG BUILD_VERSION
 
 ##──────────────────────────────────────────────────────────────────────────────
-## Entrypoint — s6-overlay init (inherited from jlesage base image)
-## Declared explicitly so HA supervisor always runs the correct PID 1
+## Entrypoint — s6-overlay v3 init (inherited from jlesage base image)
+## Declared explicitly so HA supervisor always runs the correct PID 1.
+## This MUST remain /init — do not change it.
 ##──────────────────────────────────────────────────────────────────────────────
 ENTRYPOINT ["/init"]
