@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "WacgcuoCWj4rz3Vc0TinO"
+uri = "file://.github/workflows/build-spotiflac.yml"
+type = "unspecified"
+title = "build-spotiflac.yml"
