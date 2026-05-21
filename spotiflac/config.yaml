@@ -1,5 +1,5 @@
 name: "SpotiFLAC"
-version: "1.0.2"
+version: "1.0.3"
 slug: "spotiflac"
 description: "Web-based GUI for downloading high-quality FLAC audio from Tidal, Qobuz, and Amazon Music"
 startup: services
@@ -9,11 +9,11 @@ apparmor: true
 ingress: true
 ingress_port: 8099
 ports:
-  3001/tcp: 3001
+  3001/tcp: null
 privileged:
   - SYS_ADMIN
 options:
-  TZ: "Etc/UTC"
+  TZ: "Europe/Warsaw"
   PUID: 1000
   PGID: 1000
 schema:

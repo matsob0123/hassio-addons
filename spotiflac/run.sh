@@ -3,7 +3,7 @@ set -e
 
 CONFIG=/data/options.json
 
-TZ=$(jq -r '.TZ // "Etc/UTC"' "${CONFIG}")
+TZ=$(jq -r '.TZ // "Europe/Warsaw"' "${CONFIG}")
 PUID=$(jq -r '.PUID // "1000"' "${CONFIG}")
 PGID=$(jq -r '.PGID // "1000"' "${CONFIG}")
 
@@ -17,7 +17,8 @@ echo "[SpotiFLAC] All app data stored in add-on data directory (/data)"
 echo "[SpotiFLAC] Direct access: https://<your-ha-ip>:3001"
 echo "[SpotiFLAC] HA Ingress: available via the add-on panel in Supervisor"
 
-mkdir -p /data/downloads /data/config /tmp/nginx_client_body
+mkdir -p /data/.spotiflac /data/downloads /tmp/nginx_client_body
+chown -R "${PUID}:${PGID}" /data/.spotiflac /data/downloads
 
 echo "[SpotiFLAC] Starting nginx ingress proxy on port 8099..."
 nginx -c /etc/nginx/nginx.conf &
