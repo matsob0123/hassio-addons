@@ -1,0 +1,57 @@
+#include <tunables/global>
+
+profile spotiflac flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+
+  # Capabilities required by jlesage/baseimage-gui and SpotiFLAC
+  capability chown,
+  capability dac_override,
+  capability fowner,
+  capability fsetid,
+  capability kill,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability sys_admin,
+  capability sys_chroot,
+  capability sys_ptrace,
+
+  # Filesystem access
+  / r,
+  /app/** rix,
+  /bin/** rix,
+  /config/** rwkl,
+  /data/** rwkl,
+  /dev/** rw,
+  /downloads/** rwkl,
+  /etc/** r,
+  /lib/** rix,
+  /lib64/** rix,
+  /proc/** rw,
+  /run/** rw,
+  /share/** rwkl,
+  /sys/** rw,
+  /tmp/** rwkl,
+  /usr/** rix,
+  /var/** rwkl,
+
+  # Allow signals between processes in the container
+  signal (send, receive) peer=spotiflac,
+
+  # Allow network access
+  network,
+
+  # Allow IPC
+  unix (create, getattr, getopt, setopt, shutdown, connect, send, receive, bind, listen, accept),
+
+  # Mount and unmount (needed for s6-overlay and Xvfb)
+  mount,
+  umount,
+  remount,
+
+  # Allow proc info
+  ptrace peer=spotiflac,
+
+  # Deny write access to the HA core config
+  deny /data/options.json w,
+}
