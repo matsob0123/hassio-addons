@@ -1,25 +1,2 @@
-name: "SpotiFLAC"
-version: "1.0.5"
-slug: "spotiflac"
-description: "Web-based GUI for downloading high-quality FLAC audio from Tidal, Qobuz, and Amazon Music"
-startup: services
-boot: auto
-host_network: false
-apparmor: true
-ingress: true
-ingress_port: 8099
-ports:
-  3001/tcp: null
-privileged:
-  - SYS_ADMIN
-options:
-  TZ: "Europe/Warsaw"
-  PUID: 1000
-  PGID: 1000
-schema:
-  TZ: str
-  PUID: int
-  PGID: int
-arch:
-  - amd64
-url: https://github.com/matsob0123/hassio-addons
+# DEPRECATED — moved to deprecated/spotiflac/
+# This add-on is no longer active. HA will not load this as a valid add-on.
