@@ -1,0 +1,29 @@
+name: "SpotiFLAC"
+version: "1.0.0"
+slug: "spotiflac"
+description: "Web-based GUI for downloading high-quality FLAC audio from Tidal, Qobuz, and Amazon Music. Access the UI at https://<your-ha-ip>:3001"
+startup: services
+boot: auto
+host_network: false
+ports:
+  3001/tcp: 3001
+ports_description:
+  3001/tcp: "SpotiFLAC Web UI (HTTPS)"
+privileged:
+  - SYS_ADMIN
+  - NET_ADMIN
+options:
+  TZ: "Etc/UTC"
+  PUID: 1000
+  PGID: 1000
+schema:
+  TZ: str
+  PUID: int
+  PGID: int
+map:
+  - share:rw
+arch:
+  - amd64
+panel_icon: mdi:music
+panel_title: SpotiFLAC
+url: https://github.com/matsob0123/hassio-addons
