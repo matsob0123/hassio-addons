@@ -20,16 +20,13 @@ profile spotiflac flags=(attach_disconnected,mediate_deleted) {
   / r,
   /app/** rix,
   /bin/** rix,
-  /config/** rwkl,
   /data/** rwkl,
   /dev/** rw,
-  /downloads/** rwkl,
   /etc/** r,
   /lib/** rix,
   /lib64/** rix,
   /proc/** rw,
   /run/** rw,
-  /share/** rwkl,
   /sys/** rw,
   /tmp/** rwkl,
   /usr/** rix,
@@ -52,6 +49,6 @@ profile spotiflac flags=(attach_disconnected,mediate_deleted) {
   # Allow proc info
   ptrace peer=spotiflac,
 
-  # Deny write access to the HA core config
+  # Deny write access to the HA options config
   deny /data/options.json w,
 }

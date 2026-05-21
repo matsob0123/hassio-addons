@@ -13,9 +13,14 @@ export PGID="${PGID}"
 export HOME=/data
 
 echo "[SpotiFLAC] Starting with TZ=${TZ}, PUID=${PUID}, PGID=${PGID}"
-echo "[SpotiFLAC] Web UI available at https://<your-ha-ip>:3001"
-echo "[SpotiFLAC] Tip: In the app settings, set the download folder to /share/spotiflac"
+echo "[SpotiFLAC] All app data stored in add-on data directory (/data)"
+echo "[SpotiFLAC] Direct access: https://<your-ha-ip>:3001"
+echo "[SpotiFLAC] HA Ingress: available via the add-on panel in Supervisor"
 
-mkdir -p /share/spotiflac
+mkdir -p /data/downloads /data/config /tmp/nginx_client_body
 
+echo "[SpotiFLAC] Starting nginx ingress proxy on port 8099..."
+nginx -c /etc/nginx/nginx.conf &
+
+echo "[SpotiFLAC] Starting SpotiFLAC..."
 exec /init

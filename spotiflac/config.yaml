@@ -1,11 +1,13 @@
 name: "SpotiFLAC"
-version: "1.0.1"
+version: "1.0.2"
 slug: "spotiflac"
-description: "Web-based GUI for downloading high-quality FLAC audio from Tidal, Qobuz, and Amazon Music via a browser at https://<your-ha-ip>:3001"
+description: "Web-based GUI for downloading high-quality FLAC audio from Tidal, Qobuz, and Amazon Music"
 startup: services
 boot: auto
 host_network: false
 apparmor: true
+ingress: true
+ingress_port: 8099
 ports:
   3001/tcp: 3001
 privileged:
@@ -18,8 +20,6 @@ schema:
   TZ: str
   PUID: int
   PGID: int
-map:
-  - share:rw
 arch:
   - amd64
 url: https://github.com/matsob0123/hassio-addons
