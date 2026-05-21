@@ -1,5 +1,5 @@
 name: "SpotiFLAC"
-version: "1.0.4"
+version: "1.0.5"
 slug: "spotiflac"
 description: "Web-based GUI for downloading high-quality FLAC audio from Tidal, Qobuz, and Amazon Music"
 startup: services
@@ -8,7 +8,6 @@ host_network: false
 apparmor: true
 ingress: true
 ingress_port: 8099
-image: ghcr.io/matsob0123/hassio-addons/spotiflac
 ports:
   3001/tcp: null
 privileged:
