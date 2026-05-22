@@ -1,5 +1,5 @@
 name: xTeVe
-version: "2.5.3"
+version: "2.5.3.1"
 slug: xteve
 description: M3U Proxy for Plex DVR and Emby/Jellyfin Live TV
 url: https://github.com/matsob0123/hassio-addons
@@ -12,6 +12,8 @@ host_network: false
 apparmor: true
 ingress: true
 ingress_port: 34400
+panel_icon: mdi:television-play
+panel_title: xTeVe
 ports:
   34400/tcp: 34400
 map:
