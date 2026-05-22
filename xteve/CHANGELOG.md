@@ -19,6 +19,3 @@
 - Built locally from `senexcrenshaw/xteve:2.5.3` — no external registry
 - Ingress support, port 34400 exposed
 - Removed all alexbelgium infrastructure
-
-## 2.5.3-4
-- Initial import from alexbelgium/hassio-addons
