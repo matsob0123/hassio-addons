@@ -10,9 +10,13 @@ startup: services
 boot: auto
 host_network: false
 apparmor: true
-webui: "http://[HOST]:[PORT:34400]/web"
+ingress: true
+ingress_port: 34400
 ports:
   34400/tcp: 34400
 map:
   - config:rw
   - share:rw
+environment:
+  XTEVE_CONF: /data/conf
+  XTEVE_HOME: /data
