@@ -1,0 +1,49 @@
+# Custom profile for the single-process Node runtime. No shell after initial exec.
+# Validate audit logs on the target HA OS before promoting from experimental.
+#include <tunables/global>
+
+profile fossflow flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  network inet stream,
+  network inet6 stream,
+  signal (send, receive),
+
+  /bin/busybox ixr,
+  /bin/sh ixr,
+  /sbin/docker-init ixr,
+  /dev/init ixr,
+  /app/run.sh ixr,
+  /usr/local/bin/node ixmr,
+  /usr/local/lib/** mr,
+  /usr/lib/** mr,
+  /lib/** mr,
+  /etc/** r,
+  /app/** r,
+  /data/ rw,
+  /data/** rwk,
+  /share/fossflow-backups/ rw,
+  /share/fossflow-backups/** rwk,
+  /ssl/ r,
+  /ssl/** r,
+  /tmp/ rw,
+  /tmp/** rwk,
+  /dev/null rw,
+  /dev/urandom r,
+  /dev/random r,
+  /proc/ r,
+  /proc/*/ r,
+  /proc/*/stat r,
+  /proc/*/status r,
+  /proc/*/maps r,
+  /proc/*/smaps r,
+  /proc/*/fd/ r,
+  /proc/*/fd/* rw,
+  /proc/meminfo r,
+  /proc/stat r,
+  /proc/cpuinfo r,
+  /proc/sys/kernel/random/uuid r,
+  /sys/devices/system/cpu/** r,
+  /sys/fs/cgroup/** r,
+}

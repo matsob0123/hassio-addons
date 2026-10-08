@@ -1,0 +1,150 @@
+{
+  "commit": "ac9082dcf15e1c8197b7040f0710ead85cbc21e7",
+  "workflowRun": 37768379101,
+  "url": "https://github.com/matsob0123/hassio-addons/actions/runs/37768379101",
+  "runtimeTests": 31,
+  "browserScenarios": 22,
+  "jobs": [
+    {
+      "id": 113281517243,
+      "name": "runtime",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run python3 -m pip install pyyaml",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm ci",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run build:frontend",
+          "conclusion": "success"
+        },
+        {
+          "name": "Frontend TypeScript check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npx playwright install --with-deps chromium",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run test:e2e",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 113281517513,
+      "name": "docker (linux/amd64, amd64)",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run docker/setup-qemu-action@v3",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run docker/setup-buildx-action@v3",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build the actual runtime image",
+          "conclusion": "success"
+        },
+        {
+          "name": "Runtime API tests inside image",
+          "conclusion": "success"
+        },
+        {
+          "name": "Entrypoint, health check and termination",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 113281517709,
+      "name": "docker (linux/arm64, aarch64)",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run docker/setup-qemu-action@v3",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run docker/setup-buildx-action@v3",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build the actual runtime image",
+          "conclusion": "success"
+        },
+        {
+          "name": "Runtime API tests inside image",
+          "conclusion": "success"
+        },
+        {
+          "name": "Entrypoint, health check and termination",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "aarch64 under QEMU on amd64 runner",
+    "No physical Home Assistant OS/Supervisor enforcement test"
+  ]
+}

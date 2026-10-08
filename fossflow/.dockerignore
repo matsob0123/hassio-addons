@@ -1,0 +1,10 @@
+tests
+node_modules
+*.log
+*.md
+translations
+icon.png
+logo.png
+apparmor.txt
+config.yaml
+examples

@@ -1,0 +1,172 @@
+{
+  "title": "Domowa sieć — przykład",
+  "name": "Domowa sieć — przykład",
+  "items": [
+    {
+      "id": "n0",
+      "name": "Router / FunBox",
+      "icon": "home-device",
+      "description": "Przykład — wpisz własny adres IP i opis"
+    },
+    {
+      "id": "n1",
+      "name": "OpenWrt AP",
+      "icon": "home-device",
+      "description": "Przykład — wpisz własny adres IP i opis"
+    },
+    {
+      "id": "n2",
+      "name": "Home Assistant",
+      "icon": "home-device",
+      "description": "Przykład — wpisz własny adres IP i opis"
+    },
+    {
+      "id": "n3",
+      "name": "NAS / kopie",
+      "icon": "home-device",
+      "description": "Przykład — wpisz własny adres IP i opis"
+    },
+    {
+      "id": "n4",
+      "name": "Tailscale",
+      "icon": "home-device",
+      "description": "Przykład — wpisz własny adres IP i opis"
+    }
+  ],
+  "icons": [
+    {
+      "id": "home-device",
+      "name": "Urządzenie",
+      "collection": "imported",
+      "isIsometric": true,
+      "url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5MCIgaGVpZ2h0PSIxMDAiPjxwYXRoIGZpbGw9IiMyNjhkYjUiIGQ9Ik00NSA1TDg1IDI4VjczTDQ1IDk1TDUgNzNWMjhaIi8+PHBhdGggZmlsbD0iIzEyNjA4NCIgZD0iTTQ1IDUwTDg1IDI4VjczTDQ1IDk1WiIvPjxwYXRoIGZpbGw9IiNhM2UwZmMiIGQ9Ik00NSA1TDg1IDI4TDQ1IDUwTDUgMjhaIi8+PC9zdmc+"
+    }
+  ],
+  "colors": [
+    {
+      "id": "blue",
+      "value": "#126b91"
+    }
+  ],
+  "views": [
+    {
+      "id": "home",
+      "name": "Dom",
+      "items": [
+        {
+          "id": "n0",
+          "tile": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": "n1",
+          "tile": {
+            "x": 3,
+            "y": 0
+          }
+        },
+        {
+          "id": "n2",
+          "tile": {
+            "x": 0,
+            "y": 3
+          }
+        },
+        {
+          "id": "n3",
+          "tile": {
+            "x": 3,
+            "y": 3
+          }
+        },
+        {
+          "id": "n4",
+          "tile": {
+            "x": 6,
+            "y": 0
+          }
+        }
+      ],
+      "connectors": [
+        {
+          "id": "c0",
+          "color": "blue",
+          "anchors": [
+            {
+              "id": "a0_0",
+              "ref": {
+                "item": "n0"
+              }
+            },
+            {
+              "id": "a0_1",
+              "ref": {
+                "item": "n1"
+              }
+            }
+          ],
+          "showArrow": false
+        },
+        {
+          "id": "c1",
+          "color": "blue",
+          "anchors": [
+            {
+              "id": "a1_0",
+              "ref": {
+                "item": "n0"
+              }
+            },
+            {
+              "id": "a1_1",
+              "ref": {
+                "item": "n2"
+              }
+            }
+          ],
+          "showArrow": false
+        },
+        {
+          "id": "c2",
+          "color": "blue",
+          "anchors": [
+            {
+              "id": "a2_0",
+              "ref": {
+                "item": "n0"
+              }
+            },
+            {
+              "id": "a2_1",
+              "ref": {
+                "item": "n3"
+              }
+            }
+          ],
+          "showArrow": false
+        },
+        {
+          "id": "c3",
+          "color": "blue",
+          "anchors": [
+            {
+              "id": "a3_0",
+              "ref": {
+                "item": "n1"
+              }
+            },
+            {
+              "id": "a3_1",
+              "ref": {
+                "item": "n4"
+              }
+            }
+          ],
+          "showArrow": false
+        }
+      ]
+    }
+  ]
+}

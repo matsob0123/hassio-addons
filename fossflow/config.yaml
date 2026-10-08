@@ -1,0 +1,96 @@
+name: FossFLOW
+version: 1.1.0
+slug: fossflow
+description: Isometric infrastructure diagrams with Ingress, persistent storage and
+  backups
+url: https://github.com/matsob0123/hassio-addons/tree/main/fossflow
+arch:
+- amd64
+- aarch64
+startup: application
+boot: auto
+init: true
+stage: experimental
+ingress: true
+ingress_port: 8099
+ingress_stream: true
+panel_icon: mdi:graph-outline
+panel_title: FossFLOW
+panel_admin: true
+apparmor: true
+watchdog: http://[HOST]:[PORT:8099]/health
+timeout: 30
+backup: cold
+map:
+- type: share
+  read_only: false
+- type: ssl
+  read_only: true
+ports:
+  8080/tcp: null
+ports_description:
+  8080/tcp: Optional authenticated LAN access (Ingress uses its own internal port)
+options:
+  log_level: info
+  access_log: false
+  storage_enabled: true
+  read_only: false
+  max_diagram_size_mb: 20
+  max_diagrams: 500
+  revisions_keep: 20
+  backup_interval_hours: 24
+  backup_keep: 7
+  backup_to_share: false
+  autosave_seconds: 5
+  language: pl
+  theme: system
+  default_diagram_name: Moja sieć
+  direct_access: false
+  direct_username: fossflow
+  direct_password: ''
+  direct_session_hours: 12
+  direct_ssl: false
+  certfile: fullchain.pem
+  keyfile: privkey.pem
+  compression_enabled: true
+  trash_keep_days: 30
+  trash_max: 100
+  backup_on_start: true
+  backup_max_size_mb: 100
+  startup_diagram: new
+  diagram_sort: modified
+  browser_drafts: true
+  editor_grid: true
+  external_icons: true
+schema:
+  log_level: list(debug|info|warning|error)
+  access_log: bool
+  storage_enabled: bool
+  read_only: bool
+  max_diagram_size_mb: int(1,100)
+  max_diagrams: int(1,5000)
+  revisions_keep: int(0,100)
+  backup_interval_hours: int(0,168)
+  backup_keep: int(1,90)
+  backup_to_share: bool
+  autosave_seconds: int(0,300)
+  language: list(pl|en)
+  theme: list(system|light|dark)
+  default_diagram_name: str(1,100)
+  direct_access: bool
+  direct_username: match(^[A-Za-z0-9_.-]{1,64}$)
+  direct_password: password
+  direct_session_hours: int(1,168)
+  direct_ssl: bool
+  certfile: match(^[A-Za-z0-9_.-]{1,128}$)
+  keyfile: match(^[A-Za-z0-9_.-]{1,128}$)
+  compression_enabled: bool
+  trash_keep_days: int(0,365)
+  trash_max: int(1,1000)
+  backup_on_start: bool
+  backup_max_size_mb: int(1,100)
+  startup_diagram: list(new|latest)
+  diagram_sort: list(modified|name|created)
+  browser_drafts: bool
+  editor_grid: bool
+  external_icons: bool

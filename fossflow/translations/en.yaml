@@ -1,0 +1,106 @@
+configuration:
+  log_level:
+    name: Log level
+    description: debug, info, warning or error. Passwords and Ingress URLs are never
+      logged.
+  access_log:
+    name: Access log
+    description: Logs method, status and request duration without URLs or tokens.
+  storage_enabled:
+    name: Server storage
+    description: Persistent diagrams in /data/diagrams. Use JSON export if disabled.
+  read_only:
+    name: Read-only mode
+    description: Blocks edits and server mutations. Reading and export remain available.
+  max_diagram_size_mb:
+    name: Diagram limit (MiB)
+    description: 'Maximum individual diagram request size: 1–100 MiB.'
+  max_diagrams:
+    name: Diagram count limit
+    description: 1–5000 diagrams; historical revisions do not count.
+  revisions_keep:
+    name: Revisions to keep
+    description: Previous versions kept before updates and deletions; 0 disables history.
+  backup_interval_hours:
+    name: Backup interval (hours)
+    description: Every 1–168 hours of uptime. 0 disables scheduled backups.
+  backup_keep:
+    name: Backups to keep
+    description: Keep the 1–90 most recent app-generated snapshots.
+  backup_to_share:
+    name: Copy backups to /share
+    description: Additional snapshots in /share/fossflow-backups for e.g. Samba access.
+  autosave_seconds:
+    name: Autosave delay (seconds)
+    description: After the first save, wait this many seconds after the last edit.
+      0 disables. Conflicts pause autosave.
+  language:
+    name: Panel language
+    description: Polish or English. Upstream FossFLOW tools remain in English.
+  theme:
+    name: Theme
+    description: system, light or dark. Reload after changing the system preference
+      to refresh the editor theme.
+  default_diagram_name:
+    name: New diagram name
+    description: Default name, 1–100 characters.
+  direct_access:
+    name: Direct LAN access
+    description: Separate server on 8080. Requires a password of at least 12 characters
+      and manual network port mapping.
+  direct_username:
+    name: LAN username
+    description: Direct-interface account; unrelated to HA users.
+  direct_password:
+    name: LAN password
+    description: At least 12 characters when LAN access is enabled; not used by Ingress.
+  direct_session_hours:
+    name: LAN session lifetime (hours)
+    description: 1–168 hours. Restarting or signing out invalidates the session.
+  direct_ssl:
+    name: HTTPS for LAN
+    description: Requires configured certificate and key files in /ssl. Does not affect
+      Ingress.
+  certfile:
+    name: Certificate file
+    description: Filename within /ssl, such as fullchain.pem; paths are not accepted.
+  keyfile:
+    name: Private key file
+    description: Filename within /ssl, such as privkey.pem; paths are not accepted.
+  compression_enabled:
+    name: HTTP compression
+    description: Enable gzip for text assets and JSON when accepted by the client.
+  trash_keep_days:
+    name: Trash retention
+    description: Days to recover deleted diagrams. 0 disables trash and makes deletion
+      permanent.
+  trash_max:
+    name: Trash limit
+    description: Maximum trash entries. Oldest entries are removed automatically.
+  backup_on_start:
+    name: Backup on startup
+    description: Backs up existing diagrams at startup, except in read-only mode.
+  backup_max_size_mb:
+    name: Backup size limit
+    description: Maximum JSON backup size in MiB (1–100), including export, download
+      and import.
+  startup_diagram:
+    name: Startup diagram
+    description: 'new: blank diagram. latest: most recently modified; a browser draft
+      takes precedence.'
+  diagram_sort:
+    name: Diagram sorting
+    description: 'modified: last modified, name: alphabetical, created: creation date.'
+  browser_drafts:
+    name: Browser drafts
+    description: Preserves unsaved changes locally. Disable on shared devices. This
+      is not a backup.
+  editor_grid:
+    name: Editor grid
+    description: Shows the grid on the diagram canvas.
+  external_icons:
+    name: External icon URLs
+    description: Allows HTTP/HTTPS images. Disabling restricts CSP to same-origin
+      resources and data/blob icons.
+network:
+  8080/tcp: Optional authenticated LAN interface; separate from Ingress

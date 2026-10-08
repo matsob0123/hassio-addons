@@ -1,0 +1,4 @@
+fossflow/node_modules/
+fossflow/.work/
+fossflow/test-results/
+*.log
