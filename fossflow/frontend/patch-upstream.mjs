@@ -3,6 +3,17 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const source=path.dirname(fileURLToPath(import.meta.url));
 const root=path.resolve(process.argv[2] || '/src');
+const tsconfigPath=path.join(root,'packages/fossflow-app/tsconfig.json');
+const tsconfig=JSON.parse(await fs.readFile(tsconfigPath,'utf8'));
+tsconfig.compilerOptions.target='es2020';
+await fs.writeFile(tsconfigPath,JSON.stringify(tsconfig,null,2)+'\n');
+// The original unused service assigns untyped JSON to boolean | null.
+// Keep its source type-correct even though the HA wrapper uses its own API client.
+const servicePath=path.join(root,'packages/fossflow-app/src/services/storageService.ts');
+let service=await fs.readFile(servicePath,'utf8');
+if(service.includes('this.available = data.enabled;')) {
+  await fs.writeFile(servicePath,service.replace('this.available = data.enabled;','this.available = data.enabled === true;'));
+} else if(!service.includes('this.available = data.enabled === true;')) throw new Error('Upstream storage service changed; review type patch');
 const buttonPath=path.join(root,'packages/fossflow-lib/src/components/IconButton/IconButton.tsx');
 let button=await fs.readFile(buttonPath,'utf8');
 if(!button.includes('aria-label={name}')) {
