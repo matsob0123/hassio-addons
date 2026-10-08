@@ -129,3 +129,20 @@ CI nie publikuje obrazów ani nie wysyła zmian do repozytorium: wykonuje testy
 i Docker build/smoke dla amd64 i arm64. Przed publikacją skonfiguruj własny
 rejestr, uprawnienia i numery tagów. Wersja w Dockerfile/workflow/config powinna
 być zgodna. Nie ma zależności od nieistniejącego publicznego obrazu.
+
+
+## Wydania 1.2 i konfiguracja procesu
+
+`release.json` synchronizuje wersję i pin Docker z HA/package. Właściwy updater
+`automation/update.mjs` używa standardowych modułów Node oraz git. Read-only
+prepare tworzy deterministyczny artefakt, reusable CI go weryfikuje i testuje,
+a osobny job o uprawnieniu contents:write wykonuje atomowy fast-forward main/tag.
+Stan interwału zapisuje się wyłącznie po udanej kontroli lub publikacji.
+Szczegóły: [UPDATES.md](UPDATES.md).
+
+Runtime stosuje custom_env po loadConfig, w istniejącym procesie, przed Store i
+HTTP. Rezerwuje opcje wpływające na startup/trust Ingress. Sekrety pozostają w
+options.json; public config i diagnostyka korzystają z jawnie wybranych pól.
+Store serializuje mutacje, sprawdza statfs przed zapisem, wznawia termin kopii po
+restarcie i obsługuje retencję wieku. Shutdown najpierw zamyka listeners, czeka na
+queue i opcjonalnie zapisuje snapshot; cold backup HA nadal obejmuje całe /data.

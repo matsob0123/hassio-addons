@@ -53,7 +53,7 @@ Po zmianie konfiguracji uruchom aplikację ponownie i odśwież otwarte strony.
 | `max_diagram_size_mb` | `20` | Limit żądania diagramu: 1–100 MiB |
 | `max_diagrams` | `500` | Limit diagramów: 1–5000 |
 | `revisions_keep` | `20` | Poprzednie wersje na diagram: 0–100 |
-| `backup_interval_hours` | `24` | Kopie co 1–168 godzin działania; 0 wyłącza |
+| `backup_interval_hours` | `24` | Kopie co 1–168 godzin; po restarcie termin od ostatniej kopii; 0 wyłącza |
 | `backup_keep` | `7` | Liczba ostatnich kopii: 1–90 |
 | `backup_to_share` | `false` | Dodatkowe kopie w `/share/fossflow-backups` |
 | `autosave_seconds` | `5` | Zapis po 1–300 sekundach bez zmiany; 0 wyłącza |
@@ -77,6 +77,20 @@ Po zmianie konfiguracji uruchom aplikację ponownie i odśwież otwarte strony.
 | `browser_drafts` | `true` | Lokalny szkic; wyłącz na współdzielonej przeglądarce |
 | `editor_grid` | `true` | Siatka płótna edytora |
 | `external_icons` | `true` | Pozwól na obrazy HTTP/HTTPS; false ogranicza politykę CSP |
+| `custom_env` | `[]` | Do 64 par `name`/`value`; chronione nazwy są odrzucane |
+| `backup_skip_empty` | `true` | Automatyczne kopie pomijają pusty zbiór; ręczne nie |
+| `backup_keep_days` | `0` | Limit wieku kopii 0–3650 dni; 0 wyłącza |
+| `backup_share_keep` | `7` | Osobny limit kopii w `/share`: 1–90 |
+| `backup_on_shutdown` | `false` | Kopia po zamknięciu serwerów i zakończeniu zapisów |
+| `backup_deduplicate` | `false` | Pomijaj automatyczną kopię identycznych diagramów |
+| `revisions_max_age_days` | `0` | Wiek historii 0–3650 dni; 0 wyłącza |
+| `min_free_space_mb` | `16` | Rezerwa 0–10240 MiB; zapis wymaga też miejsca na plik |
+| `compression_min_bytes` | `1024` | Próg gzip: 256–1048576 bajtów |
+| `compression_level` | `6` | Poziom gzip: 1–9 |
+| `request_timeout_seconds` | `120` | Limit otrzymania żądania: 15–600 s |
+| `direct_max_sessions` | `100` | Limit sesji LAN: 1–1000 |
+| `direct_login_attempts` | `5` | Limit prób na IP: 1–20 |
+| `direct_lockout_minutes` | `15` | Okno blokady logowania LAN: 1–1440 minut |
 
 Rozmiary są podawane w MiB: 1 MiB = 1 048 576 bajtów. Limit importu i eksportu
 zbiorczej kopii określa `backup_max_size_mb` (domyślnie 100 MiB), wraz z metadanymi JSON. Dla większej kolekcji
@@ -142,7 +156,7 @@ względne do tego katalogu, bez slashy i `..`. Certyfikat musi pasować do domen
 używanej w przeglądarce. Ingress korzysta z HTTPS Home Assistant niezależnie
 od tych ustawień. Przy TLS ciasteczko LAN ma także flagę Secure.
 Ten port jest przeznaczony do bezpośredniego dostępu; konfiguracja podścieżek
-i terminacji TLS w zewnętrznym reverse proxy nie jest częścią wersji 1.1.0.
+i terminacji TLS w zewnętrznym reverse proxy nie jest częścią wersji 1.2.0.
 
 ## Dane, historia i kopie
 
@@ -237,7 +251,7 @@ W Home Assistant Container nie ma Ingress Supervisora. Można uruchomić sam
 interfejs LAN. Na komputerze z Docker:
 
 ```sh
-docker build -t fossflow-ha:1.1.0 ./fossflow
+docker build -t fossflow-ha:1.2.0 ./fossflow
 mkdir -p ./data
 ```
 
@@ -247,9 +261,96 @@ Można podać tylko zmienione opcje; pozostałe mają bezpieczne wartości domy�
 
 ```sh
 docker run -d --name fossflow --restart unless-stopped \
-  -p 8080:8080 -v "$PWD/data:/data" fossflow-ha:1.1.0
+  -p 8080:8080 -v "$PWD/data:/data" fossflow-ha:1.2.0
 ```
 
 Otwórz `http://ADRES_KOMPUTERA:8080`. Nie publikuj portu 8099. Dla kopii share
 dodaj osobne mapowanie `/share`; dla HTTPS mapowanie `/ssl:ro`. AppArmor z pakietu
 jest automatycznie ładowany przez Supervisor; zwykły Docker używa własnego profilu.
+
+
+## Własne zmienne środowiskowe
+
+W konfiguracji YAML aplikacji HA dodaj np.:
+
+```yaml
+custom_env:
+  - name: TZ
+    value: Europe/Warsaw
+  - name: MY_DEPLOYMENT_LABEL
+    value: dom
+```
+
+Supervisor zapisuje opcje w `/data/options.json`. Runtime po walidacji przypisuje
+wartości do `process.env`, zanim utworzy serwery i storage. Nie uruchamia shella,
+nie wykonuje wartości jako kodu i nie restartuje interpretera. Nazwy muszą mieć
+1–64 znaki, zaczynać się wielką literą i zawierać tylko `A–Z`, `0–9`, `_`.
+Nie można powtarzać nazw. Maksimum 64 wpisy, 8192 bajty na wartość i 64 KiB łącznie;
+wartości muszą być stringami bez NUL. Nazwy i wartości nie są wysyłane do panelu,
+API konfiguracji, diagnostyki ani logów. Pole value jest typu `password` w HA.
+
+`TZ` ma konkretny efekt: zmienia strefę dat lokalnych/Intl Node, widoczną w
+diagnostyce. Znaczniki plików i kopii nadal używają UTC ISO dla spójności.
+Inne własne zmienne są dostępne procesowi, ale działają tylko wtedy, gdy dany
+fragment kodu lub biblioteka je odczytuje. Sama nazwa nie dodaje funkcji upstream,
+nie zmienia opcji edytora i nie włącza skanowania sieci.
+
+Zastrzeżone są prefiksy `FOSSFLOW_`, `NODE_`, `LD_`, `DYLD_`, `SUPERVISOR_`,
+`HASSIO_`, `BASH_`, `PYTHON`, `GITHUB_`, `ACTIONS_`, a także `PATH`, `HOME`, `PWD`,
+`SHELL`, `ENV`, `BASH_ENV`, `IFS`, `BUILD_VERSION`, `SSL_CERT_FILE`, `SSL_CERT_DIR`,
+`OPENSSL_CONF`, `OPENSSL_MODULES`, `UV_THREADPOOL_SIZE`. Ustawienia aplikacji
+zmieniaj opisanymi opcjami HA. Nieprawidłowa konfiguracja zatrzymuje start z
+komunikatem wskazującym nazwę opcji; wartości sekretów nie są wypisywane.
+
+## Kopie, miejsce i konfiguracja dla małego urządzenia
+
+```yaml
+backup_interval_hours: 24
+backup_on_start: true
+backup_on_shutdown: true
+backup_skip_empty: true
+backup_deduplicate: true
+backup_keep: 7
+backup_keep_days: 30
+backup_to_share: true
+backup_share_keep: 14
+revisions_keep: 10
+revisions_max_age_days: 30
+min_free_space_mb: 128
+compression_level: 1
+compression_min_bytes: 4096
+direct_access: false
+custom_env:
+  - name: TZ
+    value: Europe/Warsaw
+```
+
+To fragment do połączenia z pozostałymi opcjami HA. Zachowaj wymagane ustawienia.
+Ręczne kopie tworzą snapshot nawet przy pustych/niezmienionych diagramach.
+Deduplicacja porównuje pełne zapisane diagramy z najnowszą kopią lokalną.
+Brak/uszkodzenie poprzedniej kopii powoduje utworzenie nowej. Automatyczny termin
+wznawiany jest od ostatniego snapshotu po restarcie; pusty lub pominięty zbiór
+w czasie działania czeka kolejny interwał. Błąd kopii planowej ponawia próbę po
+minucie. Kopia przy zamykaniu działa na SIGTERM/SIGINT, nie przy nagłym odcięciu
+zasilania lub SIGKILL. Błąd takiej kopii kończy proces kodem 1 i jest w logu.
+
+Retencja liczby i wieku działa razem: kopia musi spełnić oba limity. Lokalne
+archiwa są sprzątane przy starcie, co godzinę i po utworzeniu kopii; share po
+udanej kopii do share. Wiek rewizji sprawdzany jest też przy odczycie (410 dla
+wygasłej wersji). Tryb read-only nie sprząta i nie tworzy kopii automatycznych.
+Podczas migracji z 1.1.0 ustaw `backup_share_keep` świadomie: wcześniej share
+używało `backup_keep`; teraz ma niezależną domyślną wartość 7.
+
+Ochrona miejsca sprawdza dostępne bloki przed zapisem plików. To rezerwa,
+a nie całkowity limit danych; inny proces może zużyć miejsce po sprawdzeniu.
+Atomowy zapis nadal zachowuje stary diagram przy błędzie systemu plików.
+HTTP 507: pobierz dane, usuń zbędne kopie/kosz albo zwiększ miejsce. Usuwanie
+diagramu z koszem potrzebuje miejsca na kopię odzyskiwania; w razie potrzeby
+wyłącz kosz przez `trash_keep_days: 0`, by trwale usunąć diagram i zwolnić miejsce.
+Zapis do share może nie udać się niezależnie od lokalnego; lokalna kopia pozostaje.
+
+## System wydań i aktualizacji
+
+[UPDATES.md](docs/UPDATES.md) opisuje harmonogram co 14 dni, ręczny dry run,
+weryfikację digestów, testy przed wydaniem i wycofanie zmian. Nowy numer powstaje
+wyłącznie przy zmianie bazy Docker. Aktualizacje urządzenia nadal kontroluje HA.

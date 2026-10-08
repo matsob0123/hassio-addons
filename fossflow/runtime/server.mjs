@@ -53,10 +53,10 @@ export async function createServers(config, store, log = ()=>{}) {
     res.setHeader('X-Content-Type-Options','nosniff'); res.setHeader('Referrer-Policy','no-referrer');
     res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:${o.external_icons ? ' https: http:' : ''}; font-src 'self' data:; connect-src 'self'; worker-src 'none'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'`);
     for(const [key,value] of Object.entries(headers)) res.setHeader(key,value);
-    if(o.compression_enabled && bytes.length > 1024 && /(?:text|json|javascript|svg)/.test(type)) {
+    if(o.compression_enabled && bytes.length >= o.compression_min_bytes && /(?:text|json|javascript|svg)/.test(type)) {
       res.setHeader('Vary','Accept-Encoding');
       if(/\bgzip\b(?!\s*;\s*q=0(?:\D|$))/.test(req.headers['accept-encoding'] || '')) {
-        bytes = await zip(bytes); res.setHeader('Content-Encoding','gzip');
+        bytes = await zip(bytes,{level:o.compression_level}); res.setHeader('Content-Encoding','gzip');
       }
     }
     res.setHeader('Content-Length',bytes.length);
@@ -92,14 +92,16 @@ export async function createServers(config, store, log = ()=>{}) {
           const ip = peer(req); const now = Date.now();
           if(attempts.size >= 10000 && !attempts.has(ip)) throw new HttpError(429,'Too many attempts');
           let entry = attempts.get(ip);
-          if(!entry || entry.until < now) { entry = {count:0,until:now+900000}; attempts.set(ip,entry); }
-          if(entry.count >= 5) throw new HttpError(429,'Too many attempts');
+          if(!entry || entry.until < now) { entry = {count:0,until:now+o.direct_lockout_minutes*60000}; attempts.set(ip,entry); }
+          if(entry.count >= o.direct_login_attempts) throw new HttpError(429,'Too many attempts');
           entry.count++;
           const data = await readJson(req,4096);
           const supplied = typeof data?.password === 'string' && data.password.length <= 1024 ? data.password : '';
           const match = timingSafeEqual(passwordHash,scryptSync(supplied,salt,32));
           if(data?.username !== o.direct_username || !match) throw new HttpError(401,'Invalid credentials');
-          if(sessions.size >= 1000) throw new HttpError(429,'Too many sessions');
+          for(const [key,expiry] of sessions) if(expiry <= now) sessions.delete(key);
+          sessions.delete(sessionKey(req));
+          if(sessions.size >= o.direct_max_sessions) throw new HttpError(429,'Too many sessions');
           attempts.delete(ip);
           const token = randomBytes(32).toString('hex'); const seconds = o.direct_session_hours*3600;
           sessions.set(encodeToken(token),now+seconds*1000);
@@ -202,7 +204,7 @@ export async function createServers(config, store, log = ()=>{}) {
     }
     throw new HttpError(404,'API endpoint not found');
   }
-  function tune(server) { server.requestTimeout = 120000; server.headersTimeout = 15000; server.keepAliveTimeout = 5000; return server; }
+  function tune(server) { server.requestTimeout = o.request_timeout_seconds*1000; server.headersTimeout = Math.min(15000,server.requestTimeout); server.keepAliveTimeout = 5000; return server; }
   const ingress = tune(http.createServer((req,res)=>handler(req,res,true)));
   let direct;
   if(o.direct_access) {

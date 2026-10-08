@@ -1,0 +1,101 @@
+name: FossFLOW fortnightly Docker update
+on:
+  # Daily wake-up; durable state enforces 14 days, including month/year boundaries.
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Test candidate without committing or publishing"
+        type: boolean
+        default: true
+      force_check:
+        description: "Check now, bypass the 14-day interval"
+        type: boolean
+        default: true
+concurrency:
+  group: fossflow-base-update
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main' && vars.FOSSFLOW_AUTO_UPDATE_DISABLED != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      due: ${{ steps.plan.outputs.due }}
+      changed: ${{ steps.plan.outputs.changed }}
+      version: ${{ steps.plan.outputs.version }}
+      base: ${{ steps.base.outputs.sha }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+      - name: Capture immutable base
+        id: base
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Test the updater before querying the registry
+        run: node --test fossflow/tests/updater.test.mjs
+      - name: Compare multi-architecture Docker manifest
+        id: plan
+        env:
+          FORCE_CHECK: ${{ inputs.force_check || false }}
+        run: |
+          if [ "$FORCE_CHECK" = true ]; then
+            node fossflow/automation/update.mjs --force --plan update.json
+          else
+            node fossflow/automation/update.mjs --plan update.json
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: steps.plan.outputs.due == 'true'
+        with:
+          name: fossflow-update-candidate
+          path: update.json
+          retention-days: 14
+          if-no-files-found: error
+  test:
+    needs: prepare
+    if: needs.prepare.outputs.changed == 'true'
+    uses: ./.github/workflows/fossflow-ci.yaml
+    with:
+      ref: ${{ needs.prepare.outputs.base }}
+      candidate_artifact: fossflow-update-candidate
+  publish:
+    needs: [prepare, test]
+    if: >-
+      always() && needs.prepare.result == 'success' &&
+      needs.prepare.outputs.due == 'true' &&
+      (needs.prepare.outputs.changed != 'true' || needs.test.result == 'success') &&
+      (github.event_name == 'schedule' || inputs.dry_run == false)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ needs.prepare.outputs.base }}
+          fetch-depth: 0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: fossflow-update-candidate
+          path: .fossflow-candidate
+      - name: Publish only against the tested, unchanged main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TESTED_BASE: ${{ needs.prepare.outputs.base }}
+        run: node fossflow/automation/update.mjs --publish .fossflow-candidate/update.json --base "$TESTED_BASE"
+      - name: Publication summary
+        env:
+          CHANGED: ${{ needs.prepare.outputs.changed }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          echo "Base changed: $CHANGED. FossFLOW version: $VERSION." >> "$GITHUB_STEP_SUMMARY"
+          echo "Home Assistant discovers a new version when its app store refreshes. Device updates follow the user's Home Assistant settings." >> "$GITHUB_STEP_SUMMARY"

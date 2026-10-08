@@ -5,7 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import http from 'node:http';
 import https from 'node:https';
-import {execFile} from 'node:child_process';
+import {execFile,spawn} from 'node:child_process';
 import {promisify} from 'node:util';
 import {validateOptions, defaults, loadConfig} from '../runtime/config.mjs';
 import {Store, etag} from '../runtime/store.mjs';
@@ -123,7 +123,7 @@ test('diagram and revision limits are respected',async t=>{
   assert.equal((await store.revisions('one')).length,2);
 });
 test('backup exports, retention and non-destructive restore preserve diagrams and custom icons',async t=>{
-  const {store,req,config}=await fixture(t,{backup_keep:2,backup_to_share:true});
+  const {store,req,config}=await fixture(t,{backup_keep:2,backup_share_keep:2,backup_to_share:true});
   const data={...diagram('Custom'),icons:[{id:'custom',name:'Custom',url:'data:image/svg+xml;base64,PHN2Zy8+',collection:'imported'}]};
   await store.save('custom',data,{create:true});
   for(let i=0;i<4;i++)assert.equal((await store.backup()).shared,true);
@@ -178,7 +178,6 @@ test('startup releases first listener if second port is occupied',async t=>{
 });
 
 test('advanced options validate types, boundaries, enums and inherited property names',()=>{
-  assert.equal(Object.keys(defaults).length,31);
   assert.throws(()=>validateOptions({trash_keep_days:366}),/trash_keep_days/);
   assert.throws(()=>validateOptions({trash_max:0}),/trash_max/);
   assert.throws(()=>validateOptions({backup_max_size_mb:101}),/backup_max_size_mb/);
@@ -259,4 +258,78 @@ test('diagnostics expose counts and limits but no credentials or filesystem path
 test('external image switch restricts CSP; null payloads fail cleanly',async t=>{
   const {req}=await fixture(t,{external_icons:false});const r=await req('/');assert.match(r.headers.get('content-security-policy'),/img-src 'self' data: blob:;/);assert.doesNotMatch(r.headers.get('content-security-policy'),/https:/);
   assert.equal((await req('/api/diagrams','POST',null)).status,400);assert.equal((await req('/api/diagrams','POST',{...diagram('Bad'),id:['array']})).status,400);
+});
+
+test('custom environment is literal, validated, copied and never exposes values',async t=>{
+  const {applyEnvironment}=await import('../runtime/config.mjs');
+  const entries=[{name:'TZ',value:'Europe/Warsaw'},{name:'MY_SERVICE_TOKEN',value:'test-value-$(echo nope)\n`literal`'}];
+  const env={};applyEnvironment(entries,env);assert.equal(env.TZ,'Europe/Warsaw');assert.equal(env.MY_SERVICE_TOKEN,entries[1].value);
+  const options=validateOptions({custom_env:entries});entries[0].value='UTC';assert.equal(options.custom_env[0].value,'Europe/Warsaw');
+  const {req}=await fixture(t,{custom_env:options.custom_env});
+  for(const p of ['/','/api/config','/api/diagnostics']) {const text=await (await req(p)).text();assert.doesNotMatch(text,/MY_SERVICE_TOKEN|test-value-|custom_env/);}
+});
+test('custom environment rejects startup injection, Ingress overrides and oversized/duplicate entries',()=>{
+  for(const name of ['NODE_OPTIONS','LD_PRELOAD','FOSSFLOW_INGRESS_PEERS','SUPERVISOR_TOKEN','PATH','BUILD_VERSION','OPENSSL_CONF','GITHUB_TOKEN']) assert.throws(()=>validateOptions({custom_env:[{name,value:'anything'}]}),/Reserved/);
+  for(const entries of [[{name:'lowercase',value:'x'}],[{name:'A',value:1}],[{name:'A',value:'nul\0'}],[{name:'A',value:'x',extra:true}],[{name:'A',value:'x'},{name:'A',value:'y'}],[{name:'A',value:'x'.repeat(8193)}],Array.from({length:65},(_,i)=>({name:'E'+i,value:'x'})),Array.from({length:9},(_,i)=>({name:'E'+i,value:'x'.repeat(8192)})),[{name:'TZ',value:'Mars/Olympus'}]]) assert.throws(()=>validateOptions({custom_env:entries}));
+});
+test('extended configuration bounds fail instead of silently falling back',()=>{
+  for(const [key,value] of Object.entries({backup_keep_days:-1,backup_share_keep:0,revisions_max_age_days:3651,min_free_space_mb:10241,compression_min_bytes:1,compression_level:10,request_timeout_seconds:14,direct_max_sessions:0,direct_login_attempts:21,direct_lockout_minutes:0,backup_skip_empty:'true'})) assert.throws(()=>validateOptions({[key]:value}),new RegExp(key));
+});
+test('automatic backups skip empty and identical snapshots; manual requests always produce archives',async t=>{
+  const {store}=await fixture(t,{backup_deduplicate:true});assert.deepEqual(await store.backup({scheduled:true}),{skipped:'empty',count:0});assert.equal((await store.backups()).length,0);
+  await store.save('first',diagram('First'),{create:true});const first=await store.backup({scheduled:true});assert.equal(first.count,1);
+  assert.equal((await store.backup({scheduled:true})).skipped,'unchanged');assert.equal((await store.backups()).length,1);
+  await store.backup();assert.equal((await store.backups()).length,2);
+  const d=await store.read('first');await store.save('first',diagram('Changed'),{expected:etag(d)});assert.equal((await store.backup({scheduled:true})).count,1);
+});
+test('backup age retention and independent share count preserve local copies',async t=>{
+  const {store,config}=await fixture(t,{backup_keep:4,backup_share_keep:1,backup_keep_days:2,backup_to_share:true});
+  await store.save('retained',diagram('Keep'),{create:true});await store.backup();await store.backup();
+  assert.equal((await store.backups()).length,2);assert.equal((await fs.readdir(config.shareDir)).length,1);
+  const name=`fossflow-${Date.now()-3*86400000}-00000000-0000-0000-0000-000000000000.json`;await fs.writeFile(path.join(store.backupDir,name),'{}');await store.prune(store.backupDir);assert.equal((await store.backups()).length,2);
+});
+test('revision age hides and removes old versions while keeping current diagram',async t=>{
+  const {store}=await fixture(t,{revisions_max_age_days:1});let d=await store.save('age',diagram('First'),{create:true});await store.save('age',diagram('Second'),{expected:etag(d)});
+  const dir=path.join(store.revisionsDir,'age'),old=`${Date.now()-2*86400000}-00000000-0000-0000-0000-000000000000.json`;await fs.writeFile(path.join(dir,old),JSON.stringify(d));
+  assert.equal((await store.revisions('age')).length,1);await assert.rejects(store.readRevision('age',old.slice(0,-5)),e=>e.status===410);await store.pruneRevisions();assert.equal((await fs.readdir(dir)).length,1);assert.equal((await store.read('age')).name,'Second');
+});
+test('disk protection blocks writes, trash creation and restore without damaging saved data',async t=>{
+  const {store,req}=await fixture(t);const d=await store.save('safe',diagram('Original'),{create:true});
+  store.ensureSpace=async()=>{const {HttpError}=await import('../runtime/store.mjs');throw new HttpError(507,'Insufficient free disk space');};
+  assert.equal((await req('/api/diagrams/safe','PUT',diagram('Edit'),{'If-Match':etag(d)})).status,507);
+  assert.equal((await req('/api/diagrams/safe','DELETE',undefined,{'If-Match':etag(d)})).status,507);assert.equal((await store.read('safe')).name,'Original');
+  await assert.rejects(store.backup(),e=>e.status===507);await assert.rejects(store.restore({format:'fossflow-ha-backup',version:1,diagrams:[diagram('Import')]}),e=>e.status===507);
+});
+test('free-space reservation uses actual statfs and configurable headroom',async t=>{
+  const {store}=await fixture(t,{min_free_space_mb:0});await store.ensureSpace(0);await assert.rejects(store.ensureSpace(Number.MAX_SAFE_INTEGER),e=>e.status===507);
+});
+test('backup timer resumes previous snapshot deadline after restart and closes cleanly',async t=>{
+  const {store,config}=await fixture(t,{backup_interval_hours:24,backup_on_start:false});await store.save('scheduled',diagram('Timer'),{create:true});await store.backup();store.close();
+  const restarted=new Store(config);t.after(()=>restarted.close());await restarted.init();const latest=(await restarted.backups())[0];assert.ok(Math.abs(restarted.nextBackupAt-(Date.parse(latest.date)+86400000)) < 100);
+  const diag=await restarted.diagnostics();assert.equal(diag.lastBackupAt,latest.date);assert.ok(diag.nextBackupAt);assert.equal(diag.limits.minFreeSpaceMb,16);assert.equal(diag.nodeVersion,process.versions.node);restarted.close();
+});
+test('compression threshold/level and request timeout are applied to HTTP servers',async t=>{
+  const {req,servers}=await fixture(t,{compression_min_bytes:256,compression_level:1,request_timeout_seconds:45});
+  const compressed=await req('/','GET',undefined,{'Accept-Encoding':'gzip'});assert.equal(compressed.headers.get('content-encoding'),'gzip');assert.match(await compressed.text(),/FossFLOW/);assert.equal(servers.ingress.requestTimeout,45000);
+  const raw=await req('/','GET',undefined,{'Accept-Encoding':'gzip;q=0'});assert.equal(raw.headers.get('content-encoding'),null);
+});
+test('configured LAN session and attempt limits are enforced, logout releases a slot',async t=>{
+  const {direct}=await fixture(t,{direct_access:true,direct_password:'test-password-long',direct_max_sessions:1,direct_login_attempts:2,direct_lockout_minutes:1});
+  const login=(password='test-password-long',cookie)=>fetch(direct+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json',...(cookie ? {Cookie:cookie} : {})},body:JSON.stringify({username:'fossflow',password})});
+  const r=await login(),cookie=r.headers.get('set-cookie').split(';')[0];assert.equal(r.status,200);assert.equal((await login()).status,429);
+  // Re-login replaces the same cookie rather than consuming another slot.
+  const again=await login('test-password-long',cookie);assert.equal(again.status,200);const current=again.headers.get('set-cookie').split(';')[0];
+  await fetch(direct+'/auth/logout',{method:'POST',headers:{Cookie:current}});assert.equal((await login()).status,200);
+  assert.equal((await login('wrong')).status,401);assert.equal((await login('wrong')).status,401);assert.equal((await login()).status,429);
+});
+
+test('shipped process applies TZ and creates a complete shutdown backup after SIGTERM',async t=>{
+  const {dir,config,store}=await fixture(t,{backup_on_start:false});await store.save('shutdown',diagram('Shutdown'),{create:true});
+  await fs.writeFile(path.join(dir,'options.json'),JSON.stringify({backup_on_start:false,backup_on_shutdown:true,backup_interval_hours:0,custom_env:[{name:'TZ',value:'Europe/Warsaw'},{name:'MY_SECRET',value:'test-secret-no-log'}]}));
+  const holder=http.createServer();await new Promise(resolve=>holder.listen(0,'127.0.0.1',resolve));const port=holder.address().port;await new Promise(resolve=>holder.close(resolve));
+  let output='';const child=spawn(process.execPath,[path.resolve(import.meta.dirname,'../runtime/main.mjs')],{env:{...process.env,FOSSFLOW_DATA_DIR:dir,FOSSFLOW_STATIC_DIR:config.staticDir,FOSSFLOW_INGRESS_PORT:String(port),FOSSFLOW_INGRESS_HOST:'127.0.0.1',FOSSFLOW_INGRESS_PEERS:'127.0.0.1'},stdio:['ignore','pipe','pipe']});child.stdout.on('data',b=>output+=b);child.stderr.on('data',b=>output+=b);t.after(()=>{if(child.exitCode===null) child.kill('SIGKILL');});
+  const exited=new Promise(resolve=>child.once('exit',resolve));let ready=false;
+  for(let i=0;i<50;i++) {try{if((await fetch(`http://127.0.0.1:${port}/health`)).ok){ready=true;break;}}catch{}await new Promise(resolve=>setTimeout(resolve,100));}
+  assert.ok(ready,output);const d=await (await fetch(`http://127.0.0.1:${port}/api/diagnostics`)).json();assert.equal(d.timeZone,'Europe/Warsaw');assert.equal(d.backupOnShutdown,true);
+  child.kill('SIGTERM');assert.equal(await exited,0,output);const backups=await store.backups();assert.equal(backups.length,1);assert.equal((await store.readBackup(backups[0].name)).diagrams[0].name,'Shutdown');assert.doesNotMatch(output,/MY_SECRET|test-secret-no-log/);
 });

@@ -20,7 +20,13 @@ assert set(config['schema']) == set(runtime_defaults)
 for lang in ['pl','en']:
     translation = yaml.safe_load((app/'translations'/f'{lang}.yaml').read_text())
     assert set(translation['configuration']) == set(runtime_defaults)
-for source in (app/'runtime').glob('*.mjs'):
+release = json.loads((app/'release.json').read_text())
+assert release['version'] == config['version'] == json.loads((app/'package.json').read_text())['version']
+assert release['version'] == json.loads((app/'package-lock.json').read_text())['packages']['']['version']
+assert f"ARG NODE_IMAGE={release['base_image']}" in (app/'Dockerfile').read_text()
+assert f"ARG BUILD_VERSION={release['version']}" in (app/'Dockerfile').read_text()
+assert re.fullmatch(r'node:\d+-alpine\d+\.\d+@sha256:[a-f0-9]{64}',release['base_image'])
+for source in [*(app/'runtime').glob('*.mjs'),*(app/'automation').glob('*.mjs')]:
     subprocess.run(['node','--check',str(source)],check=True)
 archive = app/'vendor/fossflow.tar.gz'
 expected = 'c180962e256127a00ad51d65f0ab41fa984f1d3d320d2258d964ddd3e9f0111c'

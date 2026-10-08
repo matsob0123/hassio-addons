@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.0 — 2026-10-08
+
+- Aktualizator Docker co 14 dni: zweryfikowane manifesty amd64/arm64, wersja patch tylko przy zmianie digestu, pełne CI przed atomową publikacją main/tag i GitHub Release.
+- Trwały stan kontroli, ręczny dry run, wyłącznik, obsługa limitów rejestru i równoległych zmian. Bez PAT.
+- 45 opcji HA z opisami PL/EN, w tym własne name/value env z maskowaniem i ochroną ustawień Ingress/Node.
+- Retencja wieku kopii i rewizji, osobny limit share, pomijanie pustych/niezmienionych kopii, wznowienie terminu po restarcie i kopia przy SIGTERM.
+- Rezerwa wolnego miejsca i HTTP 507 bez uszkadzania dotychczasowych diagramów.
+- Próg/poziom gzip, czas żądania, limity sesji LAN, prób logowania i czasu blokady.
+- Diagnostyka: wersja Node, architektura, strefa czasu, ostatnia/następna kopia i limity retencji.
+- Metadata wersji/pinu w release.json; reusable CI testuje dokładny kandydat bez polegania na zdarzeniach wywołanych GITHUB_TOKEN.
+- 56 testów Node (43 runtime + 13 aktualizatora), scenariusze przeglądarkowe i Docker obu architektur.
+
 ## 1.1.0 — 2026-10-08
 
 - Integracja z repozytorium matsob0123/hassio-addons.

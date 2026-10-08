@@ -1,5 +1,5 @@
 name: FossFLOW
-version: 1.1.0
+version: 1.2.0
 slug: fossflow
 description: Isometric infrastructure diagrams with Ingress, persistent storage and
   backups
@@ -62,6 +62,20 @@ options:
   browser_drafts: true
   editor_grid: true
   external_icons: true
+  custom_env: []
+  backup_skip_empty: true
+  backup_keep_days: 0
+  backup_share_keep: 7
+  backup_on_shutdown: false
+  backup_deduplicate: false
+  revisions_max_age_days: 0
+  min_free_space_mb: 16
+  compression_min_bytes: 1024
+  compression_level: 6
+  request_timeout_seconds: 120
+  direct_max_sessions: 100
+  direct_login_attempts: 5
+  direct_lockout_minutes: 15
 schema:
   log_level: list(debug|info|warning|error)
   access_log: bool
@@ -94,3 +108,19 @@ schema:
   browser_drafts: bool
   editor_grid: bool
   external_icons: bool
+  custom_env:
+  - name: match(^[A-Z][A-Z0-9_]{0,63}$)
+    value: password
+  backup_skip_empty: bool
+  backup_keep_days: int(0,3650)
+  backup_share_keep: int(1,90)
+  backup_on_shutdown: bool
+  backup_deduplicate: bool
+  revisions_max_age_days: int(0,3650)
+  min_free_space_mb: int(0,10240)
+  compression_min_bytes: int(256,1048576)
+  compression_level: int(1,9)
+  request_timeout_seconds: int(15,600)
+  direct_max_sessions: int(1,1000)
+  direct_login_attempts: int(1,20)
+  direct_lockout_minutes: int(1,1440)

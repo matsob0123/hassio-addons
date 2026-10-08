@@ -6,7 +6,9 @@ Izometryczny edytor diagramów infrastruktury jako aplikacja Home Assistant.
 - Trwały zapis JSON, automatyczny zapis, ochrona przed konfliktami.
 - Historia wersji, kosz z odzyskiwaniem i retencją oraz kopie lokalne i `/share`.
 - Przeglądanie, pobieranie, odtwarzanie i usuwanie zapisanych kopii.
-- 31 opcji konfiguracji z opisami PL/EN, diagnostyka, skróty i otwieranie ostatniego diagramu.
+- Automatyczne wydania po zmianie digestu bazy Docker: kontrola co 14 dni, testy przed publikacją.
+- Własne zmienne środowiskowe, ochrona wolnego miejsca, retencja wieku i kopia przy zamykaniu.
+- 45 opcji konfiguracji z opisami PL/EN, diagnostyka, skróty i otwieranie ostatniego diagramu.
 - Import/eksport JSON, eksport PNG w menu edytora, własne ikony.
 - Biblioteki ikon infrastruktury, AWS, Azure, Google Cloud i Kubernetes.
 - Polski/angielski panel, motyw systemowy/jasny/ciemny i tryb tylko do odczytu.
@@ -29,3 +31,5 @@ Port LAN pozostaw wyłączony, jeśli korzystasz z panelu HA.
 
 [Pełna konfiguracja](DOCS.md) · [Raport testów](docs/TEST_REPORT.md) ·
 [Test na HA OS](docs/HA_ACCEPTANCE.md) · [Rozwój i testy](tests/README.md).
+
+Automatyzacja i ręczny dry run: [UPDATES.md](docs/UPDATES.md).

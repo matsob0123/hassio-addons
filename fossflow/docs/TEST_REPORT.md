@@ -1,4 +1,26 @@
-# Raport testów — FossFLOW HA 1.1.0
+# Raport testów — FossFLOW HA 1.2.0
+
+## Wersja 1.2.0 — 2026-10-08
+
+Lokalnie zakończono pozytywnie 56 testów Node: 43 runtime i 13 aktualizatora,
+oraz 22 scenariusze rzeczywistej przeglądarki z Ingress. Przeszły actionlint 1.7.12,
+walidacja 45 opcji/parzystości metadanych i oficjalne schematy Supervisora, w tym
+lista custom_env z maskowanymi wartościami. Odczyt prawdziwego Docker Hub zwrócił
+obecny digest; wynik changed=false nie generuje nowej wersji.
+
+Nowe testy obejmują retencję wieku, niezależną retencję share, deduplicację,
+rezerwę miejsca/507, deadline po restarcie, kompresję, limity logowania, env bez
+wycieku oraz rzeczywisty proces z Europe/Warsaw i backupem po SIGTERM.
+Aktualizator przechodzi testy rejestru i rzeczywistego atomic push do tymczasowego
+bare origin, w tym konflikt main, istniejący tag i brak nowej wersji przy braku zmiany.
+
+GitHub Actions wykonuje pełne CI Docker obu architektur, build frontendu,
+TypeScript, testy przeglądarki i rzeczywisty rejestr/artefakt aktualizatora przed
+połączeniem PR. Wynik i identyfikator uruchomienia zostaną dopisane po zakończeniu.
+Nie uruchomiono Supervisora/AppArmor na HA OS; status pozostaje experimental.
+
+## Historyczne testy 1.1.0
+
 
 Data: 2026-10-08. Środowisko: Ubuntu 24.04, amd64, Node 24.19.0,
 Python 3.12.14, Chromium 133.0.6943.0 sterowany Playwright 1.51.1.

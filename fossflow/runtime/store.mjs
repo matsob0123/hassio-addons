@@ -46,20 +46,48 @@ export class Store {
     for (const dir of [this.config.dataDir, this.dir,this.revisionsDir,this.backupDir,this.trashDir]) await fs.mkdir(dir,{recursive:true, mode:0o700});
     if (this.o.storage_enabled && !this.o.read_only) {
       await this.pruneTrash();
-      this.trashTimer=setInterval(()=>this.serial(()=>this.pruneTrash()).catch(e=>this.log('error',`Trash retention failed: ${e.message}`)),3600000);
+      await this.prune(this.backupDir);
+      await this.pruneRevisions();
+      this.trashTimer=setInterval(()=>this.serial(async()=>{await this.pruneTrash();await this.pruneRevisions();await this.prune(this.backupDir);}).catch(e=>this.log('error',`Retention failed: ${e.message}`)),3600000);
       this.trashTimer.unref();
       if (this.o.backup_on_start && (await this.list()).length) {
         // A failed backup must not make saved diagrams unavailable.
-        await this.backup().catch(e=>this.log('error',`Startup backup failed: ${e.message}`));
+        await this.backup({scheduled:true}).catch(e=>this.log('error',`Startup backup failed: ${e.message}`));
       }
     }
     // Stale temporary writes are never visible as diagrams. Preserve them for investigation.
     if (this.o.storage_enabled && !this.o.read_only && this.o.backup_interval_hours > 0) {
-      this.timer = setInterval(()=>this.backup().catch(e=>this.log('error',`Scheduled backup failed: ${e.message}`)), this.o.backup_interval_hours*3600000);
-      this.timer.unref();
+      await this.scheduleBackups();
     }
   }
-  close() { clearInterval(this.timer); clearInterval(this.trashTimer); }
+  close() { this.closed=true; clearTimeout(this.timer); clearInterval(this.trashTimer); }
+  async scheduleBackups() {
+    const latest=(await this.backups())[0];
+    const interval=this.o.backup_interval_hours*3600000;
+    this.nextBackupAt=Date.now()+Math.max(1000,latest ? Date.parse(latest.date)+interval-Date.now() : interval);
+    const arm = () => {
+      if(this.closed) return;
+      this.timer=setTimeout(async()=>{
+        try { await this.backup({scheduled:true});this.nextBackupAt=Date.now()+interval; }
+        catch(e) { this.log('error',`Scheduled backup failed: ${e.message}`);this.nextBackupAt=Date.now()+60000; }
+        arm();
+      },Math.max(1000,this.nextBackupAt-Date.now()));this.timer.unref();
+    };
+    arm();
+  }
+  async ensureSpace(bytes=0,dir=this.config.dataDir) {
+    const disk=await fs.statfs(dir);
+    if(disk.bavail*disk.bsize < this.o.min_free_space_mb*1048576+bytes) throw new HttpError(507,'Insufficient free disk space; export or remove old archives');
+  }
+  async pruneRevisions() {
+    if(!this.o.revisions_max_age_days) return;
+    const cutoff=Date.now()-this.o.revisions_max_age_days*86400000;
+    for(const entry of await fs.readdir(this.revisionsDir,{withFileTypes:true})) {
+      if(!entry.isDirectory() || !/^[A-Za-z0-9_-]{1,128}$/.test(entry.name)) continue;
+      const dir=path.join(this.revisionsDir,entry.name);
+      for(const name of await fs.readdir(dir)) if(/^\d+-[a-f0-9-]+\.json$/.test(name) && Number(name.split('-')[0]) < cutoff) await fs.unlink(path.join(dir,name));
+    }
+  }
   async serial(fn) {
     const result = this.queue.then(fn);
     this.queue = result.catch(()=>{});
@@ -107,6 +135,7 @@ export class Store {
       if (old && !expected) throw new HttpError(428,'If-Match is required');
       if (old && expected !== etag(old)) throw new HttpError(412,'Diagram changed on another device. Reload before saving.');
       if (!old && (await this.list()).length >= this.o.max_diagrams) throw new HttpError(409,'Diagram limit reached');
+      await this.ensureSpace(Buffer.byteLength(JSON.stringify(data))+ (old && this.o.revisions_keep ? Buffer.byteLength(JSON.stringify(old)) : 0)+2048);
       if (old) await this.revision(id,old);
       const now = new Date().toISOString();
       const saved = {...data,id,created:old?.created || now,lastModified:now};
@@ -122,6 +151,7 @@ export class Store {
       if (expected !== etag(old)) throw new HttpError(412,'Diagram changed; refresh the list');
       if(this.o.trash_keep_days) {
         const entry = {deletedAt:new Date().toISOString(),diagram:old};
+        await this.ensureSpace(Buffer.byteLength(JSON.stringify(entry)));
         await atomicWrite(path.join(this.trashDir,`${Date.now()}-${randomUUID()}.json`),JSON.stringify(entry));
       }
       await fs.unlink(this.file(id));
@@ -132,11 +162,13 @@ export class Store {
   async revisions(id) {
     this.requireStorage(); const dir = path.join(this.revisionsDir,validId(id));
     let files; try { files = await fs.readdir(dir); } catch(e) { if(e.code === 'ENOENT') return []; throw e; }
-    return files.filter(f=>/^\d+-[a-f0-9-]+\.json$/.test(f)).sort().reverse().map(f=>({id:f.slice(0,-5),date:new Date(Number(f.split('-')[0])).toISOString()}));
+    const cutoff=this.o.revisions_max_age_days ? Date.now()-this.o.revisions_max_age_days*86400000 : 0;
+    return files.filter(f=>/^\d+-[a-f0-9-]+\.json$/.test(f) && Number(f.split('-')[0]) >= cutoff).sort().reverse().map(f=>({id:f.slice(0,-5),date:new Date(Number(f.split('-')[0])).toISOString()}));
   }
   async readRevision(id, revision) {
     this.requireStorage(); validId(id);
     if (!/^\d+-[a-f0-9-]+$/.test(revision)) throw new HttpError(400,'Invalid revision ID');
+    if(this.o.revisions_max_age_days && Number(revision.split('-')[0]) < Date.now()-this.o.revisions_max_age_days*86400000) throw new HttpError(410,'Revision expired');
     try { return JSON.parse(await readFileSafe(path.join(this.revisionsDir,id,`${revision}.json`))); }
     catch(e) { if(e.code === 'ENOENT') throw new HttpError(404,'Revision not found'); throw e; }
   }
@@ -152,21 +184,32 @@ export class Store {
     if(Buffer.byteLength(JSON.stringify(bundle)) > this.o.backup_max_size_mb*1048576) throw new HttpError(413,'Backup size limit reached');
     return bundle;
   }
-  async prune(dir) {
+  async prune(dir,keep=this.o.backup_keep) {
     const files = (await fs.readdir(dir)).filter(f=>/^fossflow-\d+-[a-f0-9-]+\.json$/.test(f)).sort().reverse();
-    for(const file of files.slice(this.o.backup_keep)) await fs.unlink(path.join(dir,file));
+    const cutoff=this.o.backup_keep_days ? Date.now()-this.o.backup_keep_days*86400000 : 0;
+    for(const [i,file] of files.entries()) if(i >= keep || Number(file.split('-')[1]) < cutoff) await fs.unlink(path.join(dir,file));
   }
-  async backup() {
+  async backup({scheduled=false}={}) {
     this.requireStorage(true);
     return this.serial(async()=>{
       const bundle = await this.bundle(); const text = JSON.stringify(bundle);
+      if(scheduled && this.o.backup_skip_empty && !bundle.diagrams.length) return {skipped:'empty',count:0};
+      if(scheduled && this.o.backup_deduplicate) {
+        const latest=(await this.backups())[0];
+        if(latest) {
+          try { if(JSON.stringify((await this.readBackup(latest.name)).diagrams) === JSON.stringify(bundle.diagrams)) return {skipped:'unchanged',count:bundle.diagrams.length}; }
+          catch(e) { this.log('warning',`Previous backup unavailable: ${e.message}`); }
+        }
+      }
+      await this.ensureSpace(Buffer.byteLength(text));
       const name = `fossflow-${Date.now()}-${randomUUID()}.json`;
       await atomicWrite(path.join(this.backupDir,name),text); await this.prune(this.backupDir);
       let shared = false;
       if(this.o.backup_to_share) {
         try {
           await fs.mkdir(this.config.shareDir,{recursive:true,mode:0o700});
-          await atomicWrite(path.join(this.config.shareDir,name),text); await this.prune(this.config.shareDir); shared = true;
+          await this.ensureSpace(Buffer.byteLength(text),this.config.shareDir);
+          await atomicWrite(path.join(this.config.shareDir,name),text); await this.prune(this.config.shareDir,this.o.backup_share_keep); shared = true;
         } catch(e) { this.log('warning',`Local backup saved, share copy failed: ${e.message}`); }
       }
       this.log('info',`Backup saved (${bundle.diagrams.length} diagrams)`);
@@ -203,6 +246,7 @@ export class Store {
       const d=validateDiagram(entry.diagram);
       if(Buffer.byteLength(JSON.stringify(d)) > this.o.max_diagram_size_mb*1048576) throw new HttpError(413,'Diagram is too large');
       const newId=randomUUID(),now=new Date().toISOString();
+      await this.ensureSpace(Buffer.byteLength(JSON.stringify(d))+1024);
       await atomicWrite(this.file(newId),JSON.stringify({...d,id:newId,created:now,lastModified:now}));
       await fs.unlink(file);return {id:newId};
     });
@@ -236,8 +280,11 @@ export class Store {
     const trash=this.o.storage_enabled ? await this.trash() : [];
     return {version:this.config.version,uptimeSeconds:Math.floor(process.uptime()),storageEnabled:this.o.storage_enabled,readOnly:this.o.read_only,
       diagrams:diagrams.length,diagramBytes:diagrams.reduce((n,d)=>n+d.size,0),backups:backups.length,backupBytes:backups.reduce((n,b)=>n+b.size,0),trash:trash.length,
-      diskFreeBytes:disk.bavail*disk.bsize,limits:{diagrams:this.o.max_diagrams,diagramSizeMb:this.o.max_diagram_size_mb,backupSizeMb:this.o.backup_max_size_mb,revisions:this.o.revisions_keep,trashDays:this.o.trash_keep_days},
-      backupIntervalHours:this.o.backup_interval_hours,backupOnStart:this.o.backup_on_start};
+      diskFreeBytes:disk.bavail*disk.bsize,
+      backupIntervalHours:this.o.backup_interval_hours,backupOnStart:this.o.backup_on_start,
+      backupOnShutdown:this.o.backup_on_shutdown,lastBackupAt:backups[0]?.date || null,nextBackupAt:this.nextBackupAt ? new Date(this.nextBackupAt).toISOString() : null,
+      nodeVersion:process.versions.node,architecture:process.arch,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,
+      limits: {diagrams:this.o.max_diagrams,diagramSizeMb:this.o.max_diagram_size_mb,backupSizeMb:this.o.backup_max_size_mb,revisions:this.o.revisions_keep,trashDays:this.o.trash_keep_days,minFreeSpaceMb:this.o.min_free_space_mb,backupKeepDays:this.o.backup_keep_days,revisionMaxAgeDays:this.o.revisions_max_age_days}};
   }
   async restore(bundle) {
     this.requireStorage(true);
@@ -248,6 +295,7 @@ export class Store {
     for(const d of validated) if(Buffer.byteLength(JSON.stringify(d)) > this.o.max_diagram_size_mb*1048576) throw new HttpError(413,'Diagram is too large');
     return this.serial(async()=>{
       if((await this.list()).length + validated.length > this.o.max_diagrams) throw new HttpError(409,'Diagram limit reached');
+      await this.ensureSpace(Buffer.byteLength(JSON.stringify(validated))+validated.length*1024);
       const written = [];
       try {
         for(const d of validated) {
