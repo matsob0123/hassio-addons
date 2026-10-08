@@ -5,7 +5,8 @@ wykonania wydanie ma status experimental. Nie jest potrzebne wyłączanie
 ochrony ani uprawnień hosta. Użyj kopii/diagramu testowego.
 
 1. Zanotuj wersję HA OS, Core, Supervisora i architekturę urządzenia.
-2. Skopiuj katalog do lokalnych aplikacji, odśwież sklep i zainstaluj.
+2. Zainstaluj FossFLOW z repozytorium matsob0123/hassio-addons albo skopiuj
+   katalog do lokalnych aplikacji i odśwież sklep.
    Sprawdź log budowania: checksum, npm ci, build biblioteki i aplikacji.
 3. Uruchom z domyślnymi opcjami. Oczekiwane: komunikat `Ingress :8099`,
    brak npm install na starcie, brak błędów certyfikatu czy uprawnień.
@@ -33,6 +34,13 @@ ochrony ani uprawnień hosta. Użyj kopii/diagramu testowego.
 16. Sprawdź watchdog: status zdrowy, kontrolowane zatrzymanie i ponowny start.
     Przetestuj iPhone/tablet, pionowy ekran, jasny i ciemny motyw.
 
+17. Usuń testowy diagram, odzyskaj go przez Kosz i potwierdź nowe ID.
+    Ustaw niski trash_max i sprawdź usuwanie najstarszych wpisów.
+18. Sprawdź listę lokalnych kopii: pobieranie, import i trwałe usunięcie
+    wybranej kopii. Kopia share ma pozostać, gdy usunięto tylko lokalną.
+19. Włącz startup_diagram: latest oraz sortowanie name. Najnowszy diagram
+    powinien otwierać się niezależnie od sortowania. Sprawdź diagnostykę.
+
 Arkusz wyniku:
 
 | Pole | Wynik do uzupełnienia |
@@ -45,6 +53,8 @@ Arkusz wyniku:
 | Zapis / autosave / konflikt | |
 | Restart HA OS / trwałość | |
 | Backup HA / odtworzenie | |
+| Kosz / kopie / retencja | |
+| Diagnostyka / ustawienia / startup latest | |
 | LAN / TLS, jeśli używane | |
 | iPhone / motyw | |
 

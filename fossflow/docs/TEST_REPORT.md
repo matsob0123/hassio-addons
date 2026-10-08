@@ -90,8 +90,8 @@ Zrzuty ekranu i wyniki są w `docs/evidence/`.
 - W środowisku lokalnym nie ma Docker daemon. Testy obrazów przeprowadzono
   na runnerach GitHub Actions, nie na urządzeniu użytkownika.
 - CI: `.github/workflows/fossflow.yaml`. Pełny przebieg zakończył się sukcesem:
-  [run 37767086268](https://github.com/matsob0123/hassio-addons/actions/runs/37767086268),
-  commit `5815a32bcf9e9372313f435e2e946fc9e88d5df6`.
+  [run 37768379101](https://github.com/matsob0123/hassio-addons/actions/runs/37768379101),
+  commit `ac9082dcf15e1c8197b7040f0710ead85cbc21e7`.
 - Runtime aarch64 uruchomiono przez QEMU na runnerze amd64. Nie jest to
   test na fizycznym Raspberry Pi ani test systemowy na HA OS.
 - HA Ingress był symulowany przez reverse proxy z usuwaniem prefiksu i nagłówkiem;
@@ -123,3 +123,8 @@ warunki blokady przycisków zoomu. Nowy scenariusz sprawdza przejście
 do obu granic zoomu i możliwość powrotu, a także brak nakładania kontrolek.
 Test konfliktu toleruje poprawne wykrycie zmiany przez autosave przed ręcznym
 zapisem; nie czeka wtedy na celowo zablokowany przycisk.
+
+Końcowy CI: wszystkie trzy joby zakończone sukcesem, 31 testów runtime,
+22 scenariusze browser, kontrola typów oraz obrazy Docker amd64 i aarch64.
+Zestawienie jobów i kroków: `evidence/github-ci-results.json`.
+CI używał Chromium 134; lokalny test działał także na Chromium 133.

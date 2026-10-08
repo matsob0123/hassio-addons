@@ -203,6 +203,14 @@ przeglądu zmian i przebudowania obrazu. Dla lokalnej instalacji skopiuj nowe pl
 aplikacji i odśwież sklep. Instalacja z repozytorium używa jego numeru wersji.
 Przed aktualizacją wykonaj backup Home Assistant.
 
+## Przejście z lokalnego ZIP do repozytorium
+
+Lokalny dodatek i instalacja z repozytorium mogą mieć różne identyfikatory HA
+oraz osobne katalogi danych. W starej instalacji pobierz zbiorczą kopię JSON.
+Zainstaluj FossFLOW z repozytorium i zaimportuj kopię przez panel Kopie.
+Sprawdź diagramy oraz własne ikony. Zbiorczy JSON przenosi diagramy;
+historię, konfigurację i kosz zachowuje pełny backup starej aplikacji HA.
+
 ## Rozwiązywanie problemów
 
 | Objaw | Co sprawdzić |
