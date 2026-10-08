@@ -1,0 +1,3 @@
+PASS: metadata, 31 options/schema/translations, runtime syntax, archive SHA-256, repository and workflow
+PASS: official Supervisor config + PL/EN translations + all 31 default options (isolated validators)
+PASS: sh -n and AppArmor parser compilation; enforcement on HA OS not tested

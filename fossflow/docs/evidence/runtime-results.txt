@@ -1,0 +1,44 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> fossflow-homeassistant@1.1.0 test
+> node --test tests/*.test.mjs
+
+✔ configuration rejects invalid values and fails closed for LAN credentials (1.822228ms)
+✔ options file is parsed, missing file uses safe defaults, malformed JSON fails (9.564713ms)
+✔ Ingress validates dynamic prefix and does not leak configuration secrets (77.840348ms)
+✔ Ingress uses actual peer, rejects spoofed forwarding headers; loopback health works (47.762515ms)
+✔ create/list/read/update/delete use persistent files and ETag preconditions (77.773875ms)
+✔ concurrent writes cannot silently overwrite another client (41.023794ms)
+✔ paths, invalid models, missing IDs and unknown APIs return errors (56.153282ms)
+✔ JSON content type, invalid JSON and request size limits are enforced (48.124758ms)
+✔ cross-site writes are blocked and CORS is not open (41.45491ms)
+✔ read-only blocks all writes and retains readable data (51.206469ms)
+✔ disabled storage advertises fallback and does not accept writes (43.645121ms)
+✔ diagram and revision limits are respected (51.605053ms)
+✔ backup exports, retention and non-destructive restore preserve diagrams and custom icons (62.258923ms)
+✔ corrupt and symlinked diagrams do not break the list or expose external files (49.841732ms)
+✔ authenticated LAN uses HttpOnly cookies, logout and rate limiting; spoofed Ingress cannot bypass (270.574084ms)
+✔ HTTPS requires real configured certificate files; missing certificate fails startup (37.779738ms)
+✔ actual HTTPS LAN listener authenticates and issues Secure session cookie (260.096535ms)
+✔ static assets support HEAD and safe caching; Ingress manifest is scoped (40.967181ms)
+✔ startup releases first listener if second port is occupied (73.658654ms)
+✔ advanced options validate types, boundaries, enums and inherited property names (0.604802ms)
+✔ trash recovers deleted diagrams under new IDs; repeated recovery cannot duplicate (52.811995ms)
+✔ trash retention limits count, expires old entries and supports permanent deletion (55.904815ms)
+✔ disabled trash deletes permanently; capacity prevents recovery without losing archive (82.995195ms)
+✔ stored backups can be listed, downloaded, restored as new IDs and removed (54.662171ms)
+✔ archive IDs, symlinks and cross-site archive writes are rejected (46.800096ms)
+✔ read-only and disabled storage protect every new mutation API (90.758619ms)
+✔ backup limits apply to exports, direct uploads and stored file downloads (75.661781ms)
+✔ startup backs up existing data, supports disabling and survives failed share copy (54.106522ms)
+✔ sorting supports names and creation dates, malformed metadata cannot break list (53.056472ms)
+✔ diagnostics expose counts and limits but no credentials or filesystem paths (51.02178ms)
+✔ external image switch restricts CSP; null payloads fail cleanly (50.325362ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2108.517439

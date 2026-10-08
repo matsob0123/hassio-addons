@@ -1,0 +1,116 @@
+configuration:
+  log_level:
+    name: Poziom logów
+    description: debug, info, warning lub error. Logi nie zawierają haseł ani tokenów
+      Ingress.
+  access_log:
+    name: Logi żądań
+    description: Zapisuje metodę, status i czas żądań; pomija adresy URL oraz tokeny.
+  storage_enabled:
+    name: Zapis na serwerze
+    description: Trwałe diagramy w /data/diagrams. Po wyłączeniu używaj eksportu JSON.
+  read_only:
+    name: Tylko do odczytu
+    description: Blokuje edycję i zapis, usuwanie, import kopii oraz tworzenie kopii.
+      Odczyt i eksport są dostępne.
+  max_diagram_size_mb:
+    name: Limit diagramu (MiB)
+    description: 'Maksymalny rozmiar żądania zapisu pojedynczego diagramu: 1–100 MiB.'
+  max_diagrams:
+    name: Limit liczby diagramów
+    description: Maksymalnie 1–5000 diagramów. Historia wersji nie wlicza się do tego
+      limitu.
+  revisions_keep:
+    name: Liczba wersji w historii
+    description: Przechowuje poprzednią wersję przed aktualizacją lub usunięciem.
+      0 wyłącza historię.
+  backup_interval_hours:
+    name: Kopia co ile godzin
+    description: Co 1–168 godzin działania aplikacji; 0 wyłącza harmonogram. Kopię
+      można utworzyć przyciskiem Kopie.
+  backup_keep:
+    name: Liczba kopii
+    description: Przechowuje 1–90 najnowszych kopii utworzonych przez aplikację.
+  backup_to_share:
+    name: Kopie także w /share
+    description: Zapisuje dodatkową kopię w /share/fossflow-backups, dostępną np.
+      przez Samba. Domyślnie wyłączone.
+  autosave_seconds:
+    name: Automatyczny zapis (sekundy)
+    description: Po pierwszym zapisie diagramu odczekuje tyle sekund od ostatniej
+      zmiany. 0 wyłącza. Konflikt wersji zatrzymuje autosave.
+  language:
+    name: Język panelu
+    description: Polski lub angielski. Narzędzia samego edytora FossFLOW pozostają
+      po angielsku.
+  theme:
+    name: Motyw
+    description: system, light lub dark. Po zmianie lub zmianie motywu systemu odśwież
+      aplikację, aby zaktualizować edytor.
+  default_diagram_name:
+    name: Nazwa nowego diagramu
+    description: 'Domyślna nazwa: od 1 do 100 znaków.'
+  direct_access:
+    name: Bezpośredni dostęp LAN
+    description: Osobny serwer na 8080. Wymaga hasła min. 12 znaków i ręcznego włączenia
+      portu w sekcji Sieć. Ingress działa niezależnie.
+  direct_username:
+    name: Użytkownik LAN
+    description: Użytkownik logowania do bezpośredniego interfejsu. Nie jest kontem
+      Home Assistant.
+  direct_password:
+    name: Hasło LAN
+    description: Minimum 12 znaków po włączeniu dostępu LAN. Hasło nie jest wymagane
+      dla Ingress.
+  direct_session_hours:
+    name: Czas sesji LAN (godziny)
+    description: 1–168 godzin. Restart aplikacji lub wylogowanie unieważnia sesję.
+  direct_ssl:
+    name: HTTPS dla LAN
+    description: Wymaga certfile i keyfile w /ssl. Nie zmienia HTTPS Home Assistant
+      ani Ingress.
+  certfile:
+    name: Plik certyfikatu
+    description: Nazwa pliku w /ssl, np. fullchain.pem. Bez ścieżek i znaków /.
+  keyfile:
+    name: Plik klucza
+    description: Nazwa pliku w /ssl, np. privkey.pem. Bez ścieżek i znaków /.
+  compression_enabled:
+    name: Kompresja HTTP
+    description: Kompresja gzip zasobów tekstowych i JSON dla klientów, które ją obsługują.
+  trash_keep_days:
+    name: Retencja kosza
+    description: Dni na odzyskanie usuniętego diagramu. 0 wyłącza kosz; usuwanie staje
+      się trwałe.
+  trash_max:
+    name: Limit kosza
+    description: Maksymalna liczba usuniętych diagramów w koszu. Starsze są usuwane
+      automatycznie.
+  backup_on_start:
+    name: Kopia przy uruchomieniu
+    description: Tworzy kopię istniejących diagramów przy starcie, poza trybem tylko
+      do odczytu.
+  backup_max_size_mb:
+    name: Limit rozmiaru kopii
+    description: Maksymalny rozmiar kopii JSON w MiB (1–100). Obejmuje eksport, pobieranie
+      i import.
+  startup_diagram:
+    name: Diagram przy otwarciu
+    description: 'new: nowy pusty diagram. latest: ostatnio zmodyfikowany; szkic w
+      przeglądarce ma pierwszeństwo.'
+  diagram_sort:
+    name: Sortowanie diagramów
+    description: 'modified: zmodyfikowane, name: nazwa, created: data utworzenia.'
+  browser_drafts:
+    name: Szkice w przeglądarce
+    description: Zachowuje niezapisane zmiany lokalnie. Wyłącz na współdzielonym urządzeniu.
+      Nie jest to kopia zapasowa.
+  editor_grid:
+    name: Siatka edytora
+    description: Wyświetla siatkę na płótnie diagramu.
+  external_icons:
+    name: Ikony z zewnętrznych adresów
+    description: Pozwala ładować obrazy HTTP/HTTPS. Wyłączenie ogranicza CSP do własnych
+      zasobów i ikon data/blob.
+network:
+  8080/tcp: Opcjonalny dostęp LAN z logowaniem; niezależny od Ingress

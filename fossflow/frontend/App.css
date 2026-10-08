@@ -1,0 +1,21 @@
+:root{--ha-bg:#f5f8fb;--ha-panel:#fff;--ha-text:#182a39;--ha-muted:#5c7081;--ha-border:#d8e2eb;--ha-accent:#126b91;--ha-accent-text:#fff;--ha-notice:#fff3d6;--ha-danger:#ad2727}
+:root[data-theme=dark]{--ha-bg:#111d28;--ha-panel:#182735;--ha-text:#edf4fa;--ha-muted:#a5b9ca;--ha-border:#344958;--ha-accent:#86d2f8;--ha-accent-text:#102938;--ha-notice:#4c3c1e;--ha-danger:#ffb3ae}
+html,body,#root{height:100%;margin:0}body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.ha-app{display:flex;flex-direction:column;height:100dvh;overflow:hidden;background:var(--ha-bg);color:var(--ha-text)}
+.ha-toolbar{display:flex;align-items:center;gap:20px;padding:12px 16px;background:var(--ha-panel);border-bottom:1px solid var(--ha-border);flex-wrap:wrap;flex-shrink:0}
+.ha-brand{font-weight:750;font-size:21px;letter-spacing:-.5px;white-space:nowrap}.ha-brand span{display:block;font-size:11px;font-weight:500;letter-spacing:.2px;color:var(--ha-muted)}
+.ha-actions{display:flex;gap:6px;flex-wrap:wrap;flex:1}.ha-app button{font:500 13px system-ui;border:1px solid var(--ha-border);border-radius:8px;padding:8px 11px;color:var(--ha-text);background:var(--ha-panel);cursor:pointer}
+.ha-app button:hover:not(:disabled){border-color:var(--ha-accent);box-shadow:0 1px 4px #0002}.ha-app button:disabled{opacity:.45;cursor:default}.ha-app .ha-primary{background:var(--ha-accent);color:var(--ha-accent-text);border-color:var(--ha-accent)}
+.ha-app .ha-danger{color:var(--ha-danger)}.ha-app input:not([hidden]){font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--ha-border);border-radius:8px;background:var(--ha-panel);color:var(--ha-text);box-sizing:border-box;min-width:0}
+.ha-app button:focus-visible,.ha-app input:focus-visible{outline:3px solid var(--ha-accent);outline-offset:2px}
+.ha-statusbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--ha-border);flex-shrink:0}.ha-statusbar input{flex:1;max-width:350px}.ha-statusbar span{font-size:12px;color:var(--ha-muted);margin-right:auto}
+.ha-notice{background:var(--ha-notice);padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:10px}.ha-notice button{margin-left:auto}
+.ha-canvas{flex:1;position:relative;min-height:0;overflow:hidden}.ha-canvas>div{height:100%}
+.ha-overlay{position:fixed;inset:0;background:#0007;backdrop-filter:blur(3px);z-index:1500;display:grid;place-items:center;padding:16px}
+.ha-dialog{background:var(--ha-panel);border:1px solid var(--ha-border);border-radius:18px;padding:24px;width:min(680px,100%);max-height:85dvh;overflow:auto;box-sizing:border-box;box-shadow:0 20px 80px #0004}.ha-dialog p{line-height:1.6;color:var(--ha-muted)}
+.ha-dialog-title{display:flex;align-items:center;gap:20px;justify-content:space-between;margin-bottom:20px}.ha-dialog h2{font-size:22px;margin:0}.ha-dialog>input{width:100%}
+.ha-row{display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid var(--ha-border)}.ha-row>div,.ha-row>span{flex:1;min-width:0;overflow-wrap:anywhere}.ha-row small{display:block;margin-top:6px;color:var(--ha-muted);font-size:11px}.ha-backup-actions{display:flex;gap:12px;flex-direction:column}
+@media(max-width:600px){.ha-toolbar{padding:8px;gap:8px}.ha-brand{font-size:17px;width:100%;display:flex;align-items:center;gap:10px}.ha-actions{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.ha-actions button{flex-shrink:0;white-space:nowrap}.ha-statusbar{padding:8px;gap:8px}.ha-statusbar input{max-width:none;flex-basis:100%}.ha-dialog{padding:16px}.ha-row{gap:6px}.ha-row button{padding:8px}.ha-notice{font-size:12px}}
+
+.ha-diagnostics>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:12px;border-bottom:1px solid var(--ha-border);padding:10px 0}.ha-diagnostics dt{font-weight:600;overflow-wrap:anywhere}.ha-diagnostics dd{margin:0;overflow-wrap:anywhere;color:var(--ha-muted)}
+@media(max-width:600px){.ha-row{flex-wrap:wrap}.ha-row>div{flex-basis:100%}.ha-diagnostics>div{grid-template-columns:1fr}}
