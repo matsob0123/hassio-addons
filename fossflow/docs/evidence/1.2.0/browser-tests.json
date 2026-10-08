@@ -1,0 +1,31 @@
+{
+  "browser": "133.0.6943.0",
+  "tests": [
+    "Ingress iframe: editor renders, dynamic base path, all assets and API stay under prefix",
+    "Import + first server save: nodes, connector and custom SVG icon survive",
+    "Autosave writes renamed diagram after debounce and creates history",
+    "History restore loads previous version and saves with current ETag",
+    "JSON export is a valid downloadable diagram including custom icons",
+    "Upstream PNG export produces a real downloadable image",
+    "Manual backup creates persistent file",
+    "Restart preserves server diagram and UI can load it",
+    "Concurrent edit: conflict warning and Save a copy preserve both versions",
+    "Trash UI: delete saved diagram and recover it as a new ID",
+    "Saved-backup UI downloads a valid archive",
+    "Saved-backup UI restores new diagrams without overwriting existing files",
+    "Saved-backup UI removes selected local archive",
+    "Diagnostics UI displays storage status; Escape restores keyboard focus",
+    "Keyboard shortcuts create a diagram and save a separate copy",
+    "Zoom limits remain reversible; mobile view title and zoom controls do not overlap",
+    "390 × 844 mobile viewport: toolbar scrolls and page has no horizontal overflow",
+    "LAN login opens real editor using authenticated cookie",
+    "Startup latest loads the most recent diagram; browser drafts and editor grid can be disabled",
+    "English + dark + read-only: real editor loads, name and save controls are disabled",
+    "No browser page exceptions, missing assets or unexpected failed requests",
+    "Shipped main process starts and exits cleanly on SIGTERM"
+  ],
+  "errors": [],
+  "failures": [
+    "412 http://127.0.0.1:34539/api/hassio_ingress/E2E_rotating_token/api/diagrams/ed805db0-c173-4f6e-86ae-d3460095097f"
+  ]
+}

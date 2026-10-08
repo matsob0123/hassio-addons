@@ -26,8 +26,8 @@ configuration:
       0 wyłącza historię.
   backup_interval_hours:
     name: Kopia co ile godzin
-    description: Co 1–168 godzin działania aplikacji; 0 wyłącza harmonogram. Kopię
-      można utworzyć przyciskiem Kopie.
+    description: Co 1–168 godzin; harmonogram wznawia termin ostatniej kopii po restarcie.
+      0 wyłącza.
   backup_keep:
     name: Liczba kopii
     description: Przechowuje 1–90 najnowszych kopii utworzonych przez aplikację.
@@ -112,5 +112,59 @@ configuration:
     name: Ikony z zewnętrznych adresów
     description: Pozwala ładować obrazy HTTP/HTTPS. Wyłączenie ogranicza CSP do własnych
       zasobów i ikon data/blob.
+  custom_env:
+    name: Własne zmienne środowiskowe
+    description: Do 64 par name/value, łącznie 64 KiB. Wartości są maskowane; TZ obsługuje
+      strefy IANA. Chronione zmienne Node, Ingress i systemowe są odrzucane.
+    fields:
+      name:
+        name: Nazwa
+      value:
+        name: Wartość (ukryta)
+  backup_skip_empty:
+    name: Pomijaj puste kopie automatyczne
+    description: Dotyczy harmonogramu, startu i zamykania. Ręczne kopie zawsze działają.
+  backup_keep_days:
+    name: Wiek kopii (dni)
+    description: 0 wyłącza limit wieku; limit liczby nadal obowiązuje. Do 3650 dni.
+  backup_share_keep:
+    name: Liczba kopii w share
+    description: 'Niezależna retencja kopii /share: 1–90. Limit wieku jest wspólny.'
+  backup_on_shutdown:
+    name: Kopia przy zamykaniu
+    description: Zapis po zamknięciu serwerów i zakończeniu operacji. Nie działa w
+      trybie tylko odczyt.
+  backup_deduplicate:
+    name: Pomijaj niezmienione kopie
+    description: Automatyczne kopie porównują diagramy z ostatnią kopią. Ręczne kopie
+      wymuszają zapis.
+  revisions_max_age_days:
+    name: Wiek historii (dni)
+    description: 0 zachowuje dotychczasową retencję liczby. Starsze rewizje są usuwane
+      przy starcie i co godzinę.
+  min_free_space_mb:
+    name: Rezerwa miejsca (MiB)
+    description: Zapis wymaga tej rezerwy i miejsca na nowy plik. 0 wyłącza rezerwę.
+      Błąd 507 chroni zapisane dane.
+  compression_min_bytes:
+    name: Próg kompresji (bajty)
+    description: 'Minimalny rozmiar odpowiedzi tekstowej do gzip: 256–1048576.'
+  compression_level:
+    name: Poziom gzip
+    description: 1 oszczędza CPU, 9 maksymalizuje kompresję. Domyślnie 6.
+  request_timeout_seconds:
+    name: Limit czasu żądania (sekundy)
+    description: 15–600 sekund na całe żądanie HTTP; nagłówki mają dodatkowo limit
+      15 sekund.
+  direct_max_sessions:
+    name: Limit sesji LAN
+    description: 1–1000 aktywnych sesji. Ponowne logowanie z tym samym cookie zastępuje
+      sesję.
+  direct_login_attempts:
+    name: Limit prób logowania LAN
+    description: 1–20 prób na rzeczywisty adres IP w oknie blokady.
+  direct_lockout_minutes:
+    name: Okno blokady LAN (minuty)
+    description: 1–1440 minut. Pomyślne logowanie zeruje licznik prób.
 network:
   8080/tcp: Opcjonalny dostęp LAN z logowaniem; niezależny od Ingress

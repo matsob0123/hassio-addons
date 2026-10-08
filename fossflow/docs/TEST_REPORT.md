@@ -1,4 +1,35 @@
-# Raport testów — FossFLOW HA 1.1.0
+# Raport testów — FossFLOW HA 1.2.0
+
+## Wersja 1.2.0 — 2026-10-08
+
+Lokalnie zakończono pozytywnie 56 testów Node: 43 runtime i 13 aktualizatora,
+oraz 22 scenariusze rzeczywistej przeglądarki z Ingress. Przeszły actionlint 1.7.12,
+walidacja 45 opcji/parzystości metadanych i oficjalne schematy Supervisora, w tym
+lista custom_env z maskowanymi wartościami. Odczyt prawdziwego Docker Hub zwrócił
+obecny digest; wynik changed=false nie generuje nowej wersji.
+
+Nowe testy obejmują retencję wieku, niezależną retencję share, deduplicację,
+rezerwę miejsca/507, deadline po restarcie, kompresję, limity logowania, env bez
+wycieku oraz rzeczywisty proces z Europe/Warsaw i backupem po SIGTERM.
+Aktualizator przechodzi testy rejestru i rzeczywistego atomic push do tymczasowego
+bare origin, w tym konflikt main, istniejący tag i brak nowej wersji przy braku zmiany.
+
+Pełny GitHub Actions [run 37779996203](https://github.com/matsob0123/hassio-addons/actions/runs/37779996203)
+zakończył się **success** na kodzie `aff6c00f0c5a32194a8d42bc6c7e78c06cd233c6`.
+Cztery joby przeszły: candidate (13 testów i prawdziwy rejestr), runtime (56 testów,
+build frontendu, TypeScript i 22 scenariusze browser), Docker amd64 oraz aarch64
+(43 testy runtime na każdej architekturze, start/health/SIGTERM). Wszyscy odbiorcy
+CI pobrali i zastosowali zweryfikowany artefakt aktualizatora. Dodatkowy job
+oryginalnej bazy został prawidłowo pominięty, ponieważ digest się nie zmienił.
+Host CI używał Node 22.23.3; obrazy korzystają z przypiętej bazy Node 22 Alpine.
+[Dowód CI](evidence/1.2.0/github-ci-results.json) zawiera statusy/etapy i SHA.
+Końcowy commit uzupełnia wyłącznie dokumentację/dowody; kod nie zmienia się po CI.
+Publikację przetestowano w tymczasowym rzeczywistym git origin i przez mock REST
+Release; przyszły cron i push GITHUB_TOKEN do main nie zostały jeszcze wykonane.
+Nie uruchomiono Supervisora/AppArmor na HA OS; status pozostaje experimental.
+
+## Historyczne testy 1.1.0
+
 
 Data: 2026-10-08. Środowisko: Ubuntu 24.04, amd64, Node 24.19.0,
 Python 3.12.14, Chromium 133.0.6943.0 sterowany Playwright 1.51.1.

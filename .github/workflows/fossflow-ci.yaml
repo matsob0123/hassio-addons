@@ -1,0 +1,106 @@
+name: FossFLOW reusable validation
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        default: ""
+      candidate_artifact:
+        type: string
+        default: ""
+permissions:
+  contents: read
+defaults:
+  run:
+    working-directory: fossflow
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: inputs.candidate_artifact != ''
+        with:
+          name: ${{ inputs.candidate_artifact }}
+          path: .fossflow-candidate
+      - name: Apply the verified update candidate
+        if: inputs.candidate_artifact != ''
+        run: node automation/update.mjs --apply ../.fossflow-candidate/update.json
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: fossflow/package-lock.json
+      - run: python3 -m pip install pyyaml
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run build:frontend
+      - name: Frontend TypeScript check
+        run: node .work/upstream/node_modules/typescript/bin/tsc --noEmit -p .work/upstream/packages/fossflow-app/tsconfig.json
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: browser-test-results-${{ inputs.candidate_artifact || 'source' }}
+          path: fossflow/test-results/
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            ha_arch: amd64
+          - platform: linux/arm64
+            ha_arch: aarch64
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: inputs.candidate_artifact != ''
+        with:
+          name: ${{ inputs.candidate_artifact }}
+          path: .fossflow-candidate
+      - name: Apply the verified update candidate
+        if: inputs.candidate_artifact != ''
+        run: node automation/update.mjs --apply ../.fossflow-candidate/update.json
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Read release version
+        id: release
+        run: node -e "console.log('version='+require('./release.json').version)" >> "$GITHUB_OUTPUT"
+      - name: Build the actual runtime image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: fossflow
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            BUILD_ARCH=${{ matrix.ha_arch }}
+            BUILD_VERSION=${{ steps.release.outputs.version }}
+          tags: fossflow-ha:test
+          load: true
+          cache-from: type=gha,scope=${{ matrix.ha_arch }}
+          cache-to: ${{ github.event_name != 'schedule' && format('type=gha,mode=max,scope={0}', matrix.ha_arch) || '' }}
+      - name: Runtime API tests inside image
+        run: |
+          docker run --rm --platform '${{ matrix.platform }}' \
+            -v "$PWD:/suite:ro" --entrypoint sh fossflow-ha:test \
+            -c 'apk add --no-cache openssl >/dev/null && node --test /suite/tests/runtime.test.mjs'
+      - name: Entrypoint, health check and termination
+        run: |
+          docker run -d --name fossflow-smoke --platform '${{ matrix.platform }}' fossflow-ha:test
+          timeout 60 sh -c 'until docker exec fossflow-smoke node -e "fetch(\"http://127.0.0.1:8099/health\").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; do sleep 2; done'
+          docker exec fossflow-smoke node -e 'fetch("http://127.0.0.1:8099/").then(r=>process.exit(r.status===403?0:1))'
+          docker stop --time 30 fossflow-smoke
+          test "$(docker inspect -f '{{.State.ExitCode}}' fossflow-smoke)" = 0
+          docker logs fossflow-smoke
+          docker rm fossflow-smoke

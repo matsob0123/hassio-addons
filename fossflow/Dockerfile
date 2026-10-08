@@ -13,7 +13,7 @@ RUN node /patches/patch-upstream.mjs /src
 RUN PUBLIC_URL=./ npm run build
 
 FROM ${NODE_IMAGE}
-ARG BUILD_VERSION=1.1.0
+ARG BUILD_VERSION=1.2.0
 ARG BUILD_ARCH=amd64
 ENV NODE_ENV=production BUILD_VERSION=${BUILD_VERSION}
 LABEL io.hass.name="FossFLOW" \
@@ -29,6 +29,7 @@ LABEL io.hass.name="FossFLOW" \
 WORKDIR /app
 COPY --from=build /src/packages/fossflow-app/build /app/public
 COPY --from=build /src/LICENSE /app/licenses/FossFLOW-LICENSE
+COPY release.json /app/release.json
 COPY runtime /app/runtime
 COPY run.sh /app/run.sh
 RUN chmod 0755 /app/run.sh && mkdir -p /data

@@ -1,0 +1,5 @@
+{
+  "version": "1.2.0",
+  "base_image": "node:22-alpine3.22@sha256:cd7807368cf24826297cbad5dca1a44972ccfd770647db52a8c7589eb4599ac8",
+  "upstream_commit": "59d51ec5a0be809522bc7b53cd70a50fc8dffbe6"
+}

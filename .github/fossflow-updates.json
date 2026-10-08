@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "interval_days": 14,
+  "repository": "library/node",
+  "tag": "22-alpine3.22",
+  "platforms": [
+    "amd64",
+    "arm64"
+  ],
+  "github_releases": true
+}

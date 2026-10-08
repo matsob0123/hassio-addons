@@ -2,79 +2,46 @@ name: FossFLOW tests and Docker
 on:
   push:
     branches: ["main"]
-    paths: ["fossflow/**", "!fossflow/docs/**", "!fossflow/*.md", "!fossflow/tests/README.md", ".github/workflows/fossflow.yaml"]
+    paths: ["fossflow/**", "!fossflow/docs/**", "!fossflow/*.md", "!fossflow/tests/README.md", ".github/workflows/fossflow*.yaml", ".github/fossflow*.json"]
   pull_request:
-    paths: ["fossflow/**", "!fossflow/docs/**", "!fossflow/*.md", "!fossflow/tests/README.md", ".github/workflows/fossflow.yaml"]
+    paths: ["fossflow/**", "!fossflow/docs/**", "!fossflow/*.md", "!fossflow/tests/README.md", ".github/workflows/fossflow*.yaml", ".github/fossflow*.json"]
   workflow_dispatch:
 concurrency:
   group: fossflow-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 permissions:
   contents: read
-defaults:
-  run:
-    working-directory: fossflow
 jobs:
-  runtime:
+  candidate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      changed: ${{ steps.plan.outputs.changed }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "22"
-          cache: npm
-          cache-dependency-path: fossflow/package-lock.json
-      - run: python3 -m pip install pyyaml
-      - run: npm ci
-      - run: npm run check
-      - run: npm test
-      - run: npm run build:frontend
-      - name: Frontend TypeScript check
-        run: node .work/upstream/node_modules/typescript/bin/tsc --noEmit -p .work/upstream/packages/fossflow-app/tsconfig.json
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - run: node --test fossflow/tests/updater.test.mjs
+      - name: Exercise the real updater without publication
+        id: plan
+        run: node fossflow/automation/update.mjs --ci --plan update.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: browser-test-results
-          path: fossflow/test-results/
-  docker:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: linux/amd64
-            ha_arch: amd64
-          - platform: linux/arm64
-            ha_arch: aarch64
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - name: Build the actual runtime image
-        uses: docker/build-push-action@v6
-        with:
-          context: fossflow
-          platforms: ${{ matrix.platform }}
-          build-args: |
-            BUILD_ARCH=${{ matrix.ha_arch }}
-            BUILD_VERSION=1.1.0
-          tags: fossflow-ha:test
-          load: true
-          cache-from: type=gha,scope=${{ matrix.ha_arch }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.ha_arch }}
-      - name: Runtime API tests inside image
-        run: |
-          docker run --rm --platform '${{ matrix.platform }}' \
-            -v "$PWD:/suite:ro" --entrypoint sh fossflow-ha:test \
-            -c 'apk add --no-cache openssl >/dev/null && node --test /suite/tests/*.test.mjs'
-      - name: Entrypoint, health check and termination
-        run: |
-          docker run -d --name fossflow-smoke --platform '${{ matrix.platform }}' fossflow-ha:test
-          timeout 60 sh -c 'until docker exec fossflow-smoke node -e "fetch(\"http://127.0.0.1:8099/health\").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; do sleep 2; done'
-          docker exec fossflow-smoke node -e 'fetch("http://127.0.0.1:8099/").then(r=>process.exit(r.status===403?0:1))'
-          docker stop --time 30 fossflow-smoke
-          test "$(docker inspect -f '{{.State.ExitCode}}' fossflow-smoke)" = 0
-          docker logs fossflow-smoke
-          docker rm fossflow-smoke
+          name: fossflow-ci-candidate
+          path: update.json
+          if-no-files-found: error
+  validate:
+    needs: candidate
+    uses: ./.github/workflows/fossflow-ci.yaml
+    with:
+      ref: ${{ github.sha }}
+      candidate_artifact: fossflow-ci-candidate
+  source_when_base_changed:
+    needs: candidate
+    if: needs.candidate.outputs.changed == 'true'
+    uses: ./.github/workflows/fossflow-ci.yaml
+    with:
+      ref: ${{ github.sha }}

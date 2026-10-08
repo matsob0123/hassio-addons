@@ -23,7 +23,8 @@ configuration:
     description: Previous versions kept before updates and deletions; 0 disables history.
   backup_interval_hours:
     name: Backup interval (hours)
-    description: Every 1–168 hours of uptime. 0 disables scheduled backups.
+    description: Every 1–168 hours; resumes the last snapshot deadline after restart.
+      0 disables.
   backup_keep:
     name: Backups to keep
     description: Keep the 1–90 most recent app-generated snapshots.
@@ -102,5 +103,61 @@ configuration:
     name: External icon URLs
     description: Allows HTTP/HTTPS images. Disabling restricts CSP to same-origin
       resources and data/blob icons.
+  custom_env:
+    name: Custom environment variables
+    description: Up to 64 name/value pairs, 64 KiB total. Values are masked; TZ accepts
+      IANA zones. Node, Ingress and system startup variables are protected.
+    fields:
+      name:
+        name: Name
+      value:
+        name: Value (masked)
+  backup_skip_empty:
+    name: Skip empty automatic backups
+    description: Applies to scheduling, startup and shutdown. Manual backups always
+      work.
+  backup_keep_days:
+    name: Backup age limit (days)
+    description: 0 disables age retention; count retention still applies. Up to 3650
+      days.
+  backup_share_keep:
+    name: Share backup count
+    description: 'Independent /share snapshot count: 1–90. Age limit is shared.'
+  backup_on_shutdown:
+    name: Backup on shutdown
+    description: Saves after listeners close and pending writes finish. Disabled in
+      read-only mode.
+  backup_deduplicate:
+    name: Skip unchanged backups
+    description: Automatic snapshots compare diagrams with the latest backup. Manual
+      backups force a new snapshot.
+  revisions_max_age_days:
+    name: Revision age limit (days)
+    description: 0 keeps count-only retention. Older revisions are removed at startup
+      and hourly.
+  min_free_space_mb:
+    name: Free space reserve (MiB)
+    description: Writes need this reserve plus space for the new file. 0 disables
+      the reserve. HTTP 507 protects saved data.
+  compression_min_bytes:
+    name: Compression threshold (bytes)
+    description: 'Minimum text response size for gzip: 256–1048576.'
+  compression_level:
+    name: Gzip level
+    description: 1 uses less CPU; 9 compresses more. Default 6.
+  request_timeout_seconds:
+    name: Request timeout (seconds)
+    description: 15–600 seconds to receive the HTTP request; headers have a separate
+      15-second limit.
+  direct_max_sessions:
+    name: LAN session limit
+    description: 1–1000 active sessions. Re-login with the same cookie replaces the
+      session.
+  direct_login_attempts:
+    name: LAN login attempts
+    description: 1–20 attempts per actual IP during the lockout window.
+  direct_lockout_minutes:
+    name: LAN lockout window (minutes)
+    description: 1–1440 minutes. Successful login clears the attempt counter.
 network:
   8080/tcp: Optional authenticated LAN interface; separate from Ingress
