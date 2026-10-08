@@ -9,7 +9,8 @@
 - Kopia przy starcie, konfigurowalny limit kopii, diagnostyka miejsca i danych.
 - Otwieranie ostatniego diagramu, sortowanie, opcjonalne szkice i siatka.
 - Przełącznik zewnętrznych ikon w CSP, skróty zapisu/kopii, fokus okien, stan offline.
-- 31 testów runtime i 21 scenariuszy przeglądarkowych, CI Docker amd64/aarch64.
+- 31 testów runtime i 22 scenariusze przeglądarkowych, CI Docker amd64/aarch64.
+- Kontrola typów TypeScript oraz poprawione granice zoomu i układ tytułu na telefonie.
 - Budowa frontendu na platformie buildera, runtime na architekturze urządzenia.
 
 

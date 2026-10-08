@@ -4,10 +4,12 @@ Data: 2026-10-08. Środowisko: Ubuntu 24.04, amd64, Node 24.19.0,
 Python 3.12.14, Chromium 133.0.6943.0 sterowany Playwright 1.51.1.
 Obraz docelowy używa Node 22 Alpine i obsługuje amd64/aarch64.
 
-**Wynik: 31 testów runtime i 21 scenariuszy przeglądarkowych zakończonych pozytywnie.**
+**Wynik: 31 testów runtime i 22 scenariusze przeglądarkowych zakończonych pozytywnie.**
 Sprawdzono także metadane, zgodność opcji, schematy Supervisora i składnię AppArmor.
-Nie wykonano testu działającego Supervisor, uruchomienia obrazu Docker ani
-egzekwowania profilu przez jądro na HA OS. Status wydania: experimental.
+W GitHub Actions zbudowano i uruchomiono obrazy Docker amd64 i aarch64
+(Node 22 Alpine), wraz z testami API/start/health/SIGTERM. Nie wykonano testu
+działającego Supervisor ani egzekwowania profilu przez jądro na HA OS.
+Status wydania: experimental.
 
 ## Wykonane
 
@@ -21,9 +23,11 @@ egzekwowania profilu przez jądro na HA OS. Status wydania: experimental.
 | Oficjalny schemat HA | config i tłumaczenia zaakceptowane przez SCHEMA_APP_CONFIG/SCHEMA_APP_TRANSLATIONS |
 | Oficjalne typy opcji HA | Wszystkie 31 domyślnych opcje przeszły AppOptions |
 | AppArmor | apparmor_parser 4.0.1, kompilacja bez ładowania profilu, kod 0 |
+| TypeScript frontend | tsc --noEmit, sukces; ES2020, poprawiony boolean upstream |
+| Docker amd64 i aarch64 | Build, 31 testów API w obrazie, start/health/deny loopback/SIGTERM: sukces |
 | Shell i JS | sh -n i node --check, sukces |
 | Runtime | 31/31, brak pominiętych testów |
-| Przeglądarka | 21/21, bez wyjątków strony i nieoczekiwanych 404/500 |
+| Przeglądarka | 22/22, bez wyjątków strony i nieoczekiwanych 404/500 |
 
 Walidatory pochodziły z repozytorium home-assistant/supervisor, commit
 `9ce1060ba7cfb833899d0ba81d8dbaf9fa4eed15`. Do wywołania izolowanych walidatorów
@@ -60,7 +64,7 @@ bez załadowania profilu. Profile HA OS i jego audit log wymagają testu docelow
 Test TLS generuje świeży certyfikat i jednorazowy klucz przez OpenSSL w katalogu
 tymczasowym, usuwanym po teście. Repozytorium nie zawiera kluczy TLS.
 
-## 21 scenariuszy browser
+## 22 scenariusze browser
 
 1. Edytor w iframe, symulowana brama Ingress, poprawne zasoby i API pod prefiksem.
 2. Import i zapis trzech urządzeń, połączenia oraz własnej ikony SVG.
@@ -83,11 +87,13 @@ Zrzuty ekranu i wyniki są w `docs/evidence/`.
 
 ## Ograniczenia i następne testy
 
-- Brak Docker daemon i uprawnień do kontenerów w środowisku wykonania. Nie twierdzi
-  się, że `docker build/run` lub pełna instalacja HA zostały tutaj wykonane.
-- CI jest w repozytorium: `.github/workflows/fossflow.yaml`; wynik Docker będzie
-  odnotowany po zakończeniu workflow. Sama konfiguracja nie jest wynikiem testu.
-- Nie wykonano runtime na aarch64 ani testu systemowego na HA OS.
+- W środowisku lokalnym nie ma Docker daemon. Testy obrazów przeprowadzono
+  na runnerach GitHub Actions, nie na urządzeniu użytkownika.
+- CI: `.github/workflows/fossflow.yaml`. Pełny przebieg zakończył się sukcesem:
+  [run 37767086268](https://github.com/matsob0123/hassio-addons/actions/runs/37767086268),
+  commit `5815a32bcf9e9372313f435e2e946fc9e88d5df6`.
+- Runtime aarch64 uruchomiono przez QEMU na runnerze amd64. Nie jest to
+  test na fizycznym Raspberry Pi ani test systemowy na HA OS.
 - HA Ingress był symulowany przez reverse proxy z usuwaniem prefiksu i nagłówkiem;
   rzeczywisty login HA, panel, watchdog i backup HA wymagają docelowego testu.
 - Nie testowano natywnego Safari iPhone; przetestowano viewport mobilny Chromium.
@@ -109,4 +115,11 @@ bez sekretów; CSP i null/nieprawidłowe payloady.
 
 Nowe scenariusze browser: kosz, download zapisanej kopii, import i usuwanie kopii,
 diagnostyka/Esc/fokus, skróty zapisu i kopii, startup latest oraz wyłączenie szkiców/siatki.
-Pełna lista 21 scenariuszy i wyników: `evidence/e2e-results.json`.
+Pełna lista 22 scenariusze i wyników: `evidence/e2e-results.json`.
+
+Kontrola wizualna wykryła nakładanie tytułu na zoom w upstream na ekranie 390 px.
+Poprawiono położenie tytułu, niedopuszczalną ujemną szerokość oraz odwrócone
+warunki blokady przycisków zoomu. Nowy scenariusz sprawdza przejście
+do obu granic zoomu i możliwość powrotu, a także brak nakładania kontrolek.
+Test konfliktu toleruje poprawne wykrycie zmiany przez autosave przed ręcznym
+zapisem; nie czeka wtedy na celowo zablokowany przycisk.

@@ -7,6 +7,7 @@ npm ci
 npm run check
 npm test
 npm run build:frontend
+node .work/upstream/node_modules/typescript/bin/tsc --noEmit -p .work/upstream/packages/fossflow-app/tsconfig.json
 npx playwright install --with-deps chromium
 npm run test:e2e
 ```

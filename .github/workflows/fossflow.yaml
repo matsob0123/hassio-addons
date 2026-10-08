@@ -1,10 +1,14 @@
 name: FossFLOW tests and Docker
 on:
   push:
-    paths: ["fossflow/**", ".github/workflows/fossflow.yaml"]
+    branches: ["main"]
+    paths: ["fossflow/**", "!fossflow/docs/**", "!fossflow/*.md", "!fossflow/tests/README.md", ".github/workflows/fossflow.yaml"]
   pull_request:
-    paths: ["fossflow/**", ".github/workflows/fossflow.yaml"]
+    paths: ["fossflow/**", "!fossflow/docs/**", "!fossflow/*.md", "!fossflow/tests/README.md", ".github/workflows/fossflow.yaml"]
   workflow_dispatch:
+concurrency:
+  group: fossflow-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 defaults:

@@ -48,3 +48,28 @@ export const themeConfig:`);
   theme=theme.replace("backgroundColor: 'white'","backgroundColor: 'var(--ha-panel, white)'");
   await fs.writeFile(themePath,theme);
 }
+const zoomPath=path.join(root,'packages/fossflow-lib/src/components/ZoomControls/ZoomControls.tsx');
+let zoom=await fs.readFile(zoomPath,'utf8');
+if(!zoom.includes('data-testid="ha-zoom-controls"')) {
+  if(!zoom.includes('disabled={zoom >= MAX_ZOOM}') || !zoom.includes('disabled={zoom <= MIN_ZOOM}')) throw new Error('Upstream zoom changed; review limits');
+  zoom=zoom.replace('disabled={zoom >= MAX_ZOOM}','disabled={zoom <= MIN_ZOOM}').replace(/(name="Zoom in"[\s\S]*?)disabled=\{zoom <= MIN_ZOOM\}/,'$1disabled={zoom >= MAX_ZOOM}');
+  zoom=zoom.replace('<Stack direction="row" spacing={1} alignItems="center">','<Stack data-testid="ha-zoom-controls" direction="row" spacing={1} alignItems="center">');
+  await fs.writeFile(zoomPath,zoom);
+}
+const overlayPath=path.join(root,'packages/fossflow-lib/src/components/UiOverlay/UiOverlay.tsx');
+let overlay=await fs.readFile(overlayPath,'utf8');
+if(!overlay.includes('data-testid="ha-view-title"')) {
+  const titleAnchor="{availableTools.includes('VIEW_TITLE') && (\n          <Box";
+  if(!overlay.includes(titleAnchor) || !overlay.includes('width: rendererSize.width - 500')) throw new Error('Upstream overlay changed; review responsive controls');
+  overlay=overlay.replace(titleAnchor,titleAnchor+' data-testid="ha-view-title"');
+  const start=overlay.indexOf('data-testid="ha-view-title"');
+  const title=overlay.slice(start).replace('top: rendererSize.height - appPadding.y * 2','top: rendererSize.height - appPadding.y * (rendererSize.width < 700 ? 4 : 2)').replace('width: rendererSize.width - 500','width: Math.max(0, rendererSize.width - (rendererSize.width < 700 ? appPadding.x * 2 : 500))').replace("display: 'inline-flex',","display: 'inline-flex',\n                maxWidth: '100%',").replace('<Typography fontWeight={600}','<Typography noWrap fontWeight={600}');
+  overlay=overlay.slice(0,start)+title;
+  await fs.writeFile(overlayPath,overlay);
+}
+const hintPath=path.join(root,'packages/fossflow-lib/src/components/ConnectorHintTooltip/ConnectorHintTooltip.tsx');
+let hint=await fs.readFile(hintPath,'utf8');
+if(!hint.includes('aria-label="Dismiss connector hint"')) {
+  hint=hint.replace('<IconButton\n          size="small"','<IconButton\n          aria-label="Dismiss connector hint"\n          size="small"');
+  await fs.writeFile(hintPath,hint);
+}

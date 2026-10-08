@@ -80,7 +80,7 @@ try{
   assert.equal((await store.read(id)).items.length,3);tests.push('Restart preserves server diagram and UI can load it');
   // Second browser updates the ETag; first browser must preserve its own changes.
   const old=await store.read(id);const {etag}=await import('../../runtime/store.mjs');await store.save(id,{...old,name:'Changed elsewhere',title:'Changed elsewhere'},{expected:etag(old)});
-  await frame.getByRole('textbox',{name:'Nazwa diagramu'}).fill('My conflicting copy');await frame.getByRole('button',{name:'Zapisz',exact:true}).click();
+  await frame.getByRole('textbox',{name:'Nazwa diagramu'}).fill('My conflicting copy');await page.keyboard.press('Control+s');
   await frame.getByRole('alert').filter({hasText:'innym urządzeniu'}).waitFor();assert.equal((await store.read(id)).name,'Changed elsewhere');
   await frame.getByRole('button',{name:'Zapisz kopię',exact:true}).click();await poll(async()=> (await store.list()).length === 2);tests.push('Concurrent edit: conflict warning and Save a copy preserve both versions');
   await frame.getByRole('button',{name:'Diagramy',exact:true}).click();
@@ -102,11 +102,22 @@ try{
   assert.equal(await frame.locator('body').evaluate(()=>document.activeElement?.textContent),'Diagnostyka');tests.push('Diagnostics UI displays storage status; Escape restores keyboard focus');
   await frame.getByRole('textbox',{name:'Nazwa diagramu'}).fill('Keyboard save');const beforeCopy=(await store.list()).length;
   await page.keyboard.press('Control+s');await poll(async()=> (await store.list()).some(d=>d.name === 'Keyboard save'));
+  await poll(()=>frame.getByRole('button',{name:'Zapisz',exact:true}).isEnabled());
   await page.keyboard.press('Control+Shift+s');await poll(async()=> (await store.list()).length === beforeCopy+2);tests.push('Keyboard shortcuts create a diagram and save a separate copy');
   const mobile=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});const mp=await mobile.newPage();
   mp.on('dialog',dialog=>dialog.accept());
   await mp.goto(base+prefix+'/');await mp.getByRole('button',{name:'Diagramy',exact:true}).click();await mp.getByRole('button',{name:'Otwórz',exact:true}).first().click();
   await mp.getByRole('dialog').waitFor({state:'hidden'});
+  const dismiss=mp.getByRole('button',{name:'Dismiss connector hint',exact:true});if(await dismiss.count())await dismiss.click();
+  const zoomIn=mp.getByRole('button',{name:'Zoom in',exact:true}),zoomOut=mp.getByRole('button',{name:'Zoom out',exact:true});
+  for(let i=0;i<30 && await zoomIn.isEnabled();i++)await zoomIn.click();
+  assert.equal(await zoomIn.isDisabled(),true);assert.equal(await zoomOut.isEnabled(),true);
+  for(let i=0;i<30 && await zoomOut.isEnabled();i++)await zoomOut.click();
+  assert.equal(await zoomOut.isDisabled(),true);assert.equal(await zoomIn.isEnabled(),true);
+  await mp.getByRole('button',{name:'Fit to screen',exact:true}).click();
+  const zoomBox=await mp.getByTestId('ha-zoom-controls').boundingBox(),titleBox=await mp.getByTestId('ha-view-title').boundingBox();
+  assert.ok(titleBox.y+titleBox.height <= zoomBox.y);assert.ok(titleBox.x >= 0 && titleBox.x+titleBox.width <= 390);
+  tests.push('Zoom limits remain reversible; mobile view title and zoom controls do not overlap');
   assert.equal(await mp.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth),true);await mp.screenshot({path:path.join(artifacts,'mobile-ingress.png'),fullPage:true});tests.push('390 × 844 mobile viewport: toolbar scrolls and page has no horizontal overflow');
   const lan=await context.newPage();const newDirect=servers.direct.address().port;await lan.goto(`http://127.0.0.1:${newDirect}/`);
   await lan.locator('#username').fill('fossflow');await lan.locator('#password').fill('e2e-strong-password');await lan.getByRole('button',{name:'Zaloguj / Sign in'}).click();await lan.getByRole('button',{name:'Diagramy',exact:true}).waitFor();tests.push('LAN login opens real editor using authenticated cookie');
@@ -115,6 +126,7 @@ try{
   const latest=await context.newPage();await latest.goto(base+prefix+'/');await poll(async()=>await latest.getByRole('textbox',{name:'Nazwa diagramu'}).inputValue() === 'Keyboard save');
   await latest.getByRole('textbox',{name:'Nazwa diagramu'}).fill('No browser draft');await delay(700);assert.equal(await latest.evaluate(()=>Object.keys(localStorage).some(k=>k.startsWith('fossflow-ha-draft:'))),false);
   assert.equal(await latest.evaluate(()=>window.__FOSSFLOW__.editorGrid),false);tests.push('Startup latest loads the most recent diagram; browser drafts and editor grid can be disabled');
+  await latest.close();
   await servers.close();store.close();config.options={...config.options,read_only:true,theme:'dark',language:'en'};
   store=new Store(config);await store.init();servers=await createServers(config,store);await servers.start();port=servers.ingress.address().port;
   const dark=await context.newPage();await dark.goto(base+prefix+'/');await dark.getByRole('button',{name:'Diagrams',exact:true}).click();await dark.getByRole('button',{name:'Open',exact:true}).first().click();await dark.getByRole('dialog').waitFor({state:'hidden'});
