@@ -1,6 +1,6 @@
 # Security review and provenance
 
-Review date: 2026-10-14. Scope: upstream addon commit `fcd2e767d6de4475af472f0be955f9365e621d0f`, the adaptation, build recipe and official Squid7.7 source provenance. This is source review and automated testing, not certification or a guarantee that future dependencies are safe.
+Review date: 2026-10-14. Scope: upstream addon commit `fcd2e767d6de4475af472f0be955f9365e621d0f`, the adaptation, build recipe and official Squid 7.7 source provenance. This is source review and automated testing, not certification or a guarantee that future dependencies are safe.
 
 No intentional malware behavior was identified in the reviewed addon files. Risks identified upstream included permissive source-network defaults, a remote CDN script in the privileged dashboard, insufficiently constrained configuration interpolation, password handling through command arguments, overly broad certificate permissions, and TLS fallback paths. The adaptation replaces these paths with typed validation, local static assets, credential stdin, private files and fail-closed TLS. It does not inherit the old dashboard/scripts.
 
