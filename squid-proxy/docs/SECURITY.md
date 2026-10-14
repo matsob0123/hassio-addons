@@ -18,12 +18,18 @@ Squid is an explicit forward proxy and will create outbound connections on clien
 
 ## Limitations and maintenance
 
-Administrator-supplied options and backups contain secrets. Basic authentication over HTTP is readable on the client-to-proxy link. TLS must be trusted and hostname-verified. Read access to the running container or HA backups can reveal credentials. The dashboard is intended only behind HA Ingress; do not manually expose8099 or attach untrusted containers to Supervisor's network.
+Administrator-supplied options and backups contain secrets. Basic authentication over HTTP is readable on the client-to-proxy link. TLS must be trusted and hostname-verified. Read access to the running container or HA backups can reveal credentials. The dashboard is intended only behind HA Ingress; do not manually expose 8099 or attach untrusted containers to Supervisor's network.
 
 Domain rules are not content inspection or a network firewall. DNS rebinding, shared hosting, application bypass and future Squid vulnerabilities remain reasons to segment networks. Security testing uses disposable origins and DNS, never third-party target scanning. The profile intentionally permits outbound TCP/UDP because forwarding and DNS require it; restrict egress further at your router if needed.
 
-The Home Assistant security badge has a maximum of6, not100. The manifest avoids score deductions and includes Ingress plus a custom profile. Supervisor's actual badge and real-device startup still require HA installation. amd64 and aarch64 are the only advertised architectures; 32-bit support is not claimed.
+The Home Assistant security badge has a maximum of 6, not 100. The manifest avoids score deductions and includes Ingress plus a custom profile. Supervisor's actual badge and real-device startup still require HA installation. amd64 and aarch64 are the only advertised architectures; 32-bit support is not claimed.
 
-Native-image integration tests exercise both architectures, including AppArmor enforce mode and a negative file-access probe. The workflow also runs every14 days to detect build/runtime regressions and refresh security evidence. Scheduled runs do not silently upgrade installed applications or alter a release version. Dependency/security reports can require manual triage and updates. See TEST_REPORT.md for measured results, including any remaining unverified checks.
+Native-image integration tests exercise both architectures, including AppArmor enforce mode and a negative file-access probe. The workflow also runs every 14 days to detect build/runtime regressions and refresh security evidence. Scheduled runs do not silently upgrade installed applications or alter a release version. Dependency/security reports can require manual triage and updates. See TEST_REPORT.md for measured results, including any remaining unverified checks.
 
 Primary references: [HA configuration](https://developers.home-assistant.io/docs/apps/configuration/), [HA security](https://developers.home-assistant.io/docs/apps/security/), [HA security rating](https://developers.home-assistant.io/docs/apps/presentation/), [Squid releases](https://github.com/squid-cache/squid/releases), [Squid configuration](https://www.squid-cache.org/Doc/config/).
+
+## Automated source scan
+
+ClamAV 1.5.4 scanned the adaptation, original addon and extracted official Squid source: **4149 files, 0 infected**, database count 3628169 signatures (2026-10-14). Antivirus results identify known signatures, not every malicious behavior or vulnerability. Trivy 0.76.0 secret/misconfiguration scan found no embedded secrets and one Dockerfile finding, DS-0002 (no USER instruction). That finding is recorded rather than suppressed: HA mounted-data preparation starts as root, then the code permanently drops to UID/GID 10001 before listeners; integration tests assert the actual runtime UID. AppArmor constrains both phases.
+
+The native CI additionally scans installed OS packages for HIGH/CRITICAL advisories using a checksum-verified official Trivy release. Squid is compiled outside APK package metadata and therefore requires its separate upstream release/advisory review. A clean OS scan does not certify the source-built Squid binary or future database updates.

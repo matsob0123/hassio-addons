@@ -77,10 +77,10 @@ schema:
   enable_http: bool
   enable_https: bool
   auth_enabled: bool
-  proxy_user: match(^[A-Za-z0-9_.-]{1,64}$)
+  proxy_user: match(^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$)
   proxy_password: password
   additional_users:
-  - username: match(^[A-Za-z0-9_.-]{1,64}$)
+  - username: match(^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$)
     password: password
   allowed_networks:
   - str

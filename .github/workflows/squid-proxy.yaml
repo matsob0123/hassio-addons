@@ -94,6 +94,8 @@ jobs:
           docker exec squid-smoke python3 -c 'import urllib.request,urllib.error; exec("try: urllib.request.urlopen(\"http://127.0.0.1:8099/\")\nexcept urllib.error.HTTPError as e: assert e.code==403\nelse: raise SystemExit(1)")'
           docker stop --time 30 squid-smoke
           test "$(docker inspect -f '{{.State.ExitCode}}' squid-smoke)" = 0
+      - name: Scan installed OS packages for high and critical vulnerabilities
+        run: bash squid-proxy/tests/scan-image.sh
       - name: Collect test evidence
         if: always()
         run: |

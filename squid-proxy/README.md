@@ -10,6 +10,10 @@ Uwierzytelniany serwer proxy HTTP/CONNECT oparty na **Squid 7.7**, z lokalnym pa
 - Panel z lokalnymi zasobami, stanem usługi, statystykami i wykresem; dostęp przez Supervisor.
 - Własne zmienne środowiskowe przekazywane bez powłoki; chronione zmienne są odrzucane.
 
+![Panel Squid Proxy](docs/dashboard.png)
+
+*Podgląd panelu z danymi testowymi.*
+
 ## Instalacja
 
 Dodaj repozytorium `https://github.com/matsob0123/hassio-addons` w sklepie aplikacji Home Assistant, odśwież sklep i zainstaluj **Squid Proxy**. Pierwsze budowanie kompiluje C++ i może potrwać kilkanaście minut; zalecane co najmniej 2 GB wolnej pamięci na czas budowy. Nie wymaga wyłączania trybu ochrony.

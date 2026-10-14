@@ -31,7 +31,9 @@ RUN apk upgrade --no-cache \
     && mkdir -p /data /run/squid-ha
 COPY --from=build /out/usr/sbin/squid /usr/sbin/squid
 COPY --from=build /out/usr/lib/squid/basic_ncsa_auth /usr/lib/squid/basic_ncsa_auth
-COPY --from=build /out/usr/share/squid /usr/share/squid
+COPY --from=build /out/usr/share/errors /usr/share/errors
+COPY --from=build /out/usr/share/icons /usr/share/icons
+COPY --from=build /out/etc/squid /etc/squid
 COPY --from=build /src/COPYING /app/licenses/Squid-COPYING
 COPY runtime /app/runtime
 COPY web /app/web
