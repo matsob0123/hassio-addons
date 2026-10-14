@@ -6,7 +6,7 @@ Uwierzytelniany serwer proxy HTTP/CONNECT oparty na **Squid 7.7**, z lokalnym pa
 - Własne serwery DNS, limity połączeń, rozmiarów i timeoutów.
 - Opcjonalne szyfrowane połączenie klient → proxy, pliki certyfikatów HA lub certyfikat własny.
 - Cache wyłączony, w RAM lub na dysku; bez zapisywania URL i haseł w logach dostępu.
-- Własny profil AppArmor, procesy UID 10001, bez uprawnień do hosta i tokenów API HA.
+- Własny profil AppArmor, procesy UID 10001, bez dodatkowych uprawnień do hosta i API HA; tokeny nie są przekazywane do Squida.
 - Panel z lokalnymi zasobami, stanem usługi, statystykami i wykresem; dostęp przez Supervisor.
 - Własne zmienne środowiskowe przekazywane bez powłoki; chronione zmienne są odrzucane.
 

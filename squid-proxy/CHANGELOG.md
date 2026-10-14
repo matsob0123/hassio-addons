@@ -6,6 +6,7 @@
 - Admin-only Ingress dashboard PL/EN with local assets and strict CSP.
 - 37 validated settings: multiple bcrypt accounts, networks/domains, DNS,
   HTTP/HTTPS listeners, three cache modes, resource limits and custom env.
+- Discard inherited Supervisor API tokens before starting helpers or Squid.
 - Fail-closed startup, mandatory control-plane destination protection,
   permanent UID 10001 drop and custom AppArmor profile.
 - Native amd64/aarch64 Docker integration and AppArmor regression tests.

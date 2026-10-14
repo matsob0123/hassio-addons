@@ -107,7 +107,7 @@ Zmienne przekazywane są jako wartości tekstowe bez `eval`, rozwijania `$()` an
 
 Port8099 nie jest publikowany do LAN. Panel i `/api/status` wymagają rzeczywistego adresu Supervisora `172.30.32.2`. `/health` dopuszcza także localhost i sprawdza odpowiedź wewnętrznego menedżera Squida. Menedżer na127.0.0.1:13128 umożliwia wyłącznie GET info/counters i nie jest dostępny jako ogólne proxy. Awaria Squida kończy kontener, umożliwiając restart przez Supervisor. SIGTERM czeka na zakończenie połączeń do ustawionego limitu.
 
-Bootstrap przygotowuje wyłącznie katalogi aplikacji, hasła i certyfikaty, po czym Python, Squid i helper uwierzytelniania działają jako UID/GID10001. Bez host_network, host_pid, privileged, Docker socket, urządzeń i tokenów HA. Profil AppArmor ogranicza odczyt/zapis i uruchamiane programy. Pozostaw włączony tryb ochrony. Docelowo konfiguracja spełnia kryteria najwyższej oceny HA 6/6; rzeczywistą ocenę pokazuje Supervisor po instalacji. Nie jest to gwarancja braku podatności.
+Bootstrap przygotowuje wyłącznie katalogi aplikacji, hasła i certyfikaty, po czym Python, Squid i helper uwierzytelniania działają jako UID/GID10001. Bez host_network, host_pid, privileged, Docker socket, urządzeń i żądania dostępu do API HA. Supervisor może wstrzyknąć tokeny środowiskowe także bez tego uprawnienia; dodatek usuwa `SUPERVISOR_TOKEN` i `HASSIO_TOKEN` przed uruchomieniem helperów i Squida. Profil AppArmor ogranicza odczyt/zapis i uruchamiane programy. Pozostaw włączony tryb ochrony. Docelowo konfiguracja spełnia kryteria najwyższej oceny HA 6/6; rzeczywistą ocenę pokazuje Supervisor po instalacji. Nie jest to gwarancja braku podatności.
 
 ## Migracja i diagnostyka
 

@@ -13,7 +13,7 @@ Squid is an explicit forward proxy and will create outbound connections on clien
 - The dashboard requires the actual Supervisor peer, ignores spoofed forwarding headers, exposes a fixed status whitelist and has no configuration/file-write endpoint.
 - No external browser scripts/fonts, inline JavaScript, eval or runtime installation of Python packages. Python standard library only; the image contains distro-maintained runtime tools.
 - Source SHA256 and base manifest digest are pinned. `apk upgrade` receives current signed security fixes during build, so package versions can change on rebuild. This is intentional and means the entire image is not byte-reproducible.
-- Root is discarded before opening listeners; the AppArmor profile also constrains bootstrap. No elevated HA permissions, host mounts except read-only SSL, or API access.
+- Root is discarded before opening listeners; the AppArmor profile also constrains bootstrap. No elevated HA permissions, host mounts except read-only SSL, or requested API access. Supervisor-injected SUPERVISOR_TOKEN/HASSIO_TOKEN are removed before launching any helper or Squid; no token is used by the application.
 - Raw Squid directives are not configurable: unrestricted directives could undo safety controls or execute helpers. Custom env cannot replace protected loader, path, Python or HA variables.
 
 ## Limitations and maintenance

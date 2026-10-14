@@ -398,7 +398,15 @@ def access_log_relay(run):
         fifo.unlink(missing_ok=True)
 
 
+def discard_api_tokens():
+    # Supervisor injects these even without requested API access. Helpers and
+    # Squid have no reason to inherit them; do this before any subprocess.
+    for name in ("SUPERVISOR_TOKEN", "HASSIO_TOKEN"):
+        os.environ.pop(name, None)
+
+
 def main():
+    discard_api_tokens()
     with contextlib.ExitStack() as stack:
         return run_service(stack)
 

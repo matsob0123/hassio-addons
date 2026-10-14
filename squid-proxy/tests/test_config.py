@@ -12,7 +12,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "runtime"))
 from config import DEFAULTS, validate_options, render, environment, load
-from service import regular_read, private_write, Handler, Dashboard
+from service import discard_api_tokens, regular_read, private_write, Handler, Dashboard
 
 PASSWORD = "fixture-only-long-password"
 
@@ -22,6 +22,20 @@ def opts(**patches):
 
 
 class ConfigTests(unittest.TestCase):
+    def test_injected_api_tokens_are_removed_before_helpers_and_squid(self):
+        with patch.dict(
+            os.environ,
+            {
+                "SUPERVISOR_TOKEN": "fixture-only",
+                "HASSIO_TOKEN": "fixture-only",
+                "MY_TAG": "keep",
+            },
+        ):
+            discard_api_tokens()
+            self.assertNotIn("SUPERVISOR_TOKEN", os.environ)
+            self.assertNotIn("HASSIO_TOKEN", os.environ)
+            self.assertEqual(os.environ["MY_TAG"], "keep")
+
     def test_empty_credentials_fail_before_opening_listeners(self):
         with self.assertRaisesRegex(ValueError, "16..72"):
             validate_options({})

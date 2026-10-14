@@ -1,10 +1,10 @@
 # Test report — Squid Proxy 1.0.0
 
-Verified on 2026-10-14. Native CI: [successful run 38589229890](https://github.com/matsob0123/hassio-addons/actions/runs/38589229890), source commit `b2e872b9b10775b76545783ff52e9d9c1addf113`. The subsequent report/documentation commit does not change runtime code, tests, manifest or workflows.
+Verified on 2026-10-14. [Final revision checks in PR #3](https://github.com/matsob0123/hassio-addons/pull/3/checks). Reproducible native baseline: [successful run 38589229890](https://github.com/matsob0123/hassio-addons/actions/runs/38589229890), commit `b2e872b9b10775b76545783ff52e9d9c1addf113`; the final revision additionally removes automatically injected HA API tokens before any subprocess and adds its regression test. See the PR checks for the exact final tested commit.
 
 | Verification | Result |
 |---|---|
-| Python options, renderer, credentials, paths and Ingress policy | 22 tests passed locally and in CI |
+| Python options, renderer, credentials, paths and Ingress policy | 23 tests passed locally and in CI |
 | Fortnightly updater: manifests, clock boundaries, tampering, atomic git publication and release failure handling | 13 tests passed locally and in CI |
 | Official Supervisor config, PL/EN translations and all 37 default options | Passed using isolated official Supervisor validators; no running Supervisor |
 | AppArmor syntax, JavaScript syntax and workflow actionlint | Passed |
