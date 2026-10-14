@@ -9,6 +9,8 @@ profile squid_proxy flags=(attach_disconnected,mediate_deleted) {
   network inet dgram,
   network inet6 dgram,
   signal (send, receive),
+  # docker-init forwards stop signals across the bootstrap UID change.
+  capability kill,
   capability chown,
   capability fowner,
   capability dac_override,

@@ -172,7 +172,7 @@ class Suite(unittest.TestCase):
             shutil.copyfile(tls_files[1], self.ssl_dir / "privkey.pem")
         o = {
             "proxy_password": PASSWORD,
-            "allowed_networks": ["127.0.0.1/32"],
+            "allowed_networks": ["127.0.0.1/32", "::1/128"],
             "allow_private_destinations": True,
             "http_safe_ports": [80, 443, 18080, 18443],
             "https_connect_ports": [443, 18443],
