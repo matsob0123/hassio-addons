@@ -1,0 +1,135 @@
+configuration:
+  enable_http:
+    name: HTTP proxy
+    description: Listen on 3128. Basic Auth on this port does not encrypt the password.
+  enable_https:
+    name: TLS proxy
+    description: 'Listen on 3129: encrypted client-to-proxy connection. Does not intercept
+      HTTPS websites.'
+  auth_enabled:
+    name: Require authentication
+    description: Enabled by default. Source network restrictions remain when disabled.
+  proxy_user:
+    name: Primary proxy account
+    description: 1–64 ASCII letters, digits, dot, underscore or hyphen.
+  proxy_password:
+    name: Proxy password
+    description: 'Required when authentication is on: 16–72 UTF-8 bytes. Runtime password
+      file uses bcrypt.'
+  additional_users:
+    name: Additional accounts
+    description: Up to 31 username/password entries; usernames must be unique.
+    fields:
+      username:
+        name: Username
+      password:
+        name: Password
+  allowed_networks:
+    name: Allowed client networks
+    description: CIDR list, default 192.168.0.0/16 only. Successful authentication
+      never bypasses it.
+  denied_networks:
+    name: Denied client networks
+    description: Explicit CIDR blocks take precedence over the allowlist.
+  allow_public_clients:
+    name: Allow public source networks
+    description: Requires authentication and HTTPS-only listeners. Disabled by default.
+  allow_private_destinations:
+    name: Access to LAN destinations
+    description: Allows private destinations. Loopback, link-local and Supervisor
+      control addresses remain blocked.
+  allowed_domains:
+    name: Allowed domains
+    description: Empty disables allow filtering. .example.com or *.example.com includes
+      subdomains.
+  blocked_domains:
+    name: Blocked domains
+    description: Domain denylist takes precedence. No URLs or regular expressions.
+  dns_servers:
+    name: Proxy DNS servers
+    description: Up to 8 IP addresses. Empty uses container DNS. Applies to names
+      resolved by the proxy.
+  http_safe_ports:
+    name: Allowed destination ports
+    description: Default 80 and 443. Unsafe service ports are rejected.
+  https_connect_ports:
+    name: CONNECT tunnel ports
+    description: Default 443. Must also be included in http_safe_ports.
+  cache_mode:
+    name: Cache mode
+    description: 'off: no cache; memory: RAM; disk: RAM and /data/cache. HTTPS CONNECT
+      is never cached.'
+  cache_mem_mb:
+    name: Cache RAM (MiB)
+    description: 8–1024 MiB; used by memory and disk modes.
+  cache_disk_mb:
+    name: Disk cache size (MiB)
+    description: 64–32768 MiB; cache is excluded from HA backups.
+  cache_max_object_mb:
+    name: Maximum cached object (MiB)
+    description: 1–1024 MiB, no larger than the disk cache.
+  cache_object_memory_kb:
+    name: Maximum RAM object (KiB)
+    description: 1–16384 KiB, no larger than allocated cache RAM.
+  max_connections_per_client:
+    name: Connection limit per client
+    description: 1–1024 concurrent connections per source IP.
+  request_body_max_mb:
+    name: Upload body limit (MiB)
+    description: 1–2048 MiB per HTTP request body.
+  connect_timeout_seconds:
+    name: Connection timeout (s)
+    description: 1–120 seconds to connect to a destination.
+  request_timeout_seconds:
+    name: Request timeout (s)
+    description: 5–600 seconds to receive a request.
+  read_timeout_seconds:
+    name: Read timeout (s)
+    description: 5–1800 seconds without destination data.
+  client_lifetime_minutes:
+    name: Client lifetime (min)
+    description: 1–1440 minutes; also affects long-lived tunnels.
+  shutdown_timeout_seconds:
+    name: Shutdown timeout (s)
+    description: 1–20 seconds to finish active requests.
+  auth_cache_seconds:
+    name: Successful authentication cache (s)
+    description: 0–3600 seconds; restart invalidates the cache.
+  access_log:
+    name: Access logging
+    description: 'Disabled by default. When on: time, method, status, bytes; no URLs
+      or account names.'
+  log_client_ips:
+    name: Client IPs in access logs
+    description: Adds client IP only when access_log is enabled.
+  log_level:
+    name: Service log level
+    description: info or minimal warning/error output; never a full options dump.
+  tls_mode:
+    name: TLS certificate source
+    description: 'files: PEM from /ssl; self_signed: local 365-day certificate, trust
+      it explicitly.'
+  certfile:
+    name: Certificate filename
+    description: Regular PEM file in /ssl; no paths or symlinks.
+  keyfile:
+    name: Key filename
+    description: Regular key file in /ssl; copied to a private runtime directory.
+  tls_domain:
+    name: TLS hostname
+    description: DNS name for the self-signed certificate, e.g. proxy.home.arpa.
+  language:
+    name: Dashboard language
+    description: Polish or English; Squid messages remain English.
+  custom_env:
+    name: Custom environment variables
+    description: Up to 32 name/value pairs. Python, loader, HA and Squid startup variables
+      are protected.
+    fields:
+      name:
+        name: Name
+      value:
+        name: Value
+network:
+  3128/tcp: Proxy HTTP
+  3129/tcp: Proxy TLS / HTTPS

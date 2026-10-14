@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "base_image": "alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6",
+  "squid_version": "7.7",
+  "squid_source": "https://github.com/squid-cache/squid/releases/download/SQUID_7_7/squid-7.7.tar.xz",
+  "squid_sha256": "e3bd613b91b1c498ec2992276063342a85cd6edddd5521294e04f44bc055da9b",
+  "upstream_addon": "Nwus9XWK5UTy/homeassistant",
+  "upstream_addon_commit": "fcd2e767d6de4475af472f0be955f9365e621d0f"
+}

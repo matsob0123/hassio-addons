@@ -1,0 +1,142 @@
+name: Squid Proxy validation
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        default: ""
+      candidate_artifact:
+        type: string
+        default: ""
+  push:
+    branches: [main]
+    paths: ['squid-proxy/**', '.github/workflows/squid-proxy*.yaml', '.github/squid-proxy-*.json']
+  pull_request:
+    paths: ['squid-proxy/**', '.github/workflows/squid-proxy*.yaml', '.github/squid-proxy-*.json']
+  workflow_dispatch:
+  schedule:
+    - cron: '37 4 * * 2'
+permissions:
+  contents: read
+concurrency:
+  group: squid-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    # Weekly trigger, every second epoch week: no misleading twice-monthly cron.
+    if: github.event_name != 'schedule' || github.repository == 'matsob0123/hassio-addons'
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.gate.outputs.proceed }}
+    steps:
+      - id: gate
+        env:
+          CANDIDATE_ARTIFACT: ${{ inputs.candidate_artifact }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ -n "$CANDIDATE_ARTIFACT" ] || [ "$EVENT_NAME" != schedule ] || [ $(($(date -u +%s) / 604800 % 2)) -eq 0 ]; then
+            echo 'proceed=true' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        if: steps.gate.outputs.proceed == 'true'
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: inputs.candidate_artifact != ''
+        with:
+          name: ${{ inputs.candidate_artifact }}
+          path: .squid-proxy-candidate
+      - name: Apply verified candidate
+        if: inputs.candidate_artifact != ''
+        run: node squid-proxy/automation/update.mjs --apply .squid-proxy-candidate/update.json
+      - name: Validate metadata and configuration
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          python3 -m pip install 'PyYAML==6.0.3'
+          python3 squid-proxy/tests/validate.py
+          python3 -m unittest discover -s squid-proxy/tests -p 'test_*.py' -v
+          node --check squid-proxy/web/app.js
+          node --test squid-proxy/tests/updater.test.mjs
+          sudo apparmor_parser -Q -T squid-proxy/apparmor.txt
+  native:
+    needs: check
+    if: needs.check.outputs.proceed == 'true'
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: inputs.candidate_artifact != ''
+        with:
+          name: ${{ inputs.candidate_artifact }}
+          path: .squid-proxy-candidate
+      - name: Apply verified candidate
+        if: inputs.candidate_artifact != ''
+        run: node squid-proxy/automation/update.mjs --apply .squid-proxy-candidate/update.json
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Read release version
+        id: release
+        run: python3 -c "import json; print('version='+json.load(open('squid-proxy/release.json'))['version'])" >> "$GITHUB_OUTPUT"
+      - name: Build native runtime image from verified source
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: squid-proxy
+          load: true
+          tags: squid-ha:test
+          build-args: |
+            BUILD_ARCH=${{ matrix.arch }}
+            BUILD_VERSION=${{ steps.release.outputs.version }}
+          cache-from: type=gha,scope=squid-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=squid-${{ matrix.arch }}
+      - name: Enforce AppArmor and test real proxy traffic
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq apparmor-utils
+          sudo apparmor_parser -r squid-proxy/apparmor.txt
+          sudo aa-status
+          docker network create --subnet 172.28.50.0/24 squid-origin
+          docker network create --subnet 172.30.32.0/24 squid-ingress
+          docker create --name squid-integration --network squid-origin --ip 172.28.50.2 \
+            --security-opt apparmor=unconfined -v "$PWD/squid-proxy:/suite:ro" \
+            --entrypoint sh squid-ha:test -c 'apk add --no-cache apparmor-utils >/dev/null && SQUID_HA_TEST_APPARMOR=1 PYTHONDONTWRITEBYTECODE=1 python3 /suite/tests/integration.py'
+          docker network connect --ip 172.30.32.2 squid-ingress squid-integration
+          docker start --attach squid-integration
+          test "$(docker inspect -f '{{.State.ExitCode}}' squid-integration)" = 0
+      - name: Entrypoint and health under production profile
+        run: |
+          mkdir -p "$RUNNER_TEMP/squid-data"
+          python3 -c 'import json,os; json.dump({"proxy_password":"ci-disposable-password-only","allowed_networks":["127.0.0.1/32"]},open(os.environ["RUNNER_TEMP"]+"/squid-data/options.json","w"))'
+          docker run -d --init --name squid-smoke --security-opt apparmor=squid_proxy \
+            -v "$RUNNER_TEMP/squid-data:/data" squid-ha:test
+          timeout 60 sh -c 'until docker exec squid-smoke python3 -c "import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:8099/health\",timeout=2).read()"; do sleep 2; done'
+          docker exec squid-smoke python3 -c 'import urllib.request,urllib.error; exec("try: urllib.request.urlopen(\"http://127.0.0.1:8099/\")\nexcept urllib.error.HTTPError as e: assert e.code==403\nelse: raise SystemExit(1)")'
+          docker stop --time 30 squid-smoke
+          test "$(docker inspect -f '{{.State.ExitCode}}' squid-smoke)" = 0
+      - name: Scan installed OS packages for high and critical vulnerabilities
+        run: bash squid-proxy/tests/scan-image.sh
+      - name: Collect test evidence
+        if: always()
+        run: |
+          mkdir -p squid-proxy/test-results
+          docker logs squid-integration > squid-proxy/test-results/integration.log 2>&1 || true
+          docker cp squid-integration:/tmp/squid-integration-summary.json squid-proxy/test-results/summary.json || true
+          docker logs squid-smoke > squid-proxy/test-results/entrypoint.log 2>&1 || true
+          sudo dmesg | tail -150 > squid-proxy/test-results/kernel.log || true
+          docker run --rm --entrypoint sh squid-ha:test -c 'uname -m; squid -v; apk info -vv' > squid-proxy/test-results/components.txt || true
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: squid-native-${{ matrix.arch }}
+          path: squid-proxy/test-results/

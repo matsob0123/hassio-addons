@@ -2,3 +2,6 @@ fossflow/node_modules/
 fossflow/.work/
 fossflow/test-results/
 *.log
+
+squid-proxy/**/__pycache__/
+squid-proxy/test-results/

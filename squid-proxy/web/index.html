@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="__LANG__">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Squid Proxy</title>
+    <link rel="stylesheet" href="__BASE__style.css" />
+    <script defer src="__BASE__app.js"></script>
+  </head>
+  <body data-base="__BASE__">
+    <main>
+      <header>
+        <div class="mark" aria-hidden="true">⇄</div>
+        <div>
+          <span class="eyebrow">HOME ASSISTANT · NETWORK</span>
+          <h1>Squid Proxy</h1>
+        </div>
+        <span id="health" class="badge">…</span>
+      </header>
+      <p id="intro" class="intro"></p>
+      <section class="metrics">
+        <article>
+          <span data-label="requests"></span><strong id="requests">—</strong
+          ><small data-label="requestsNote"></small>
+        </article>
+        <article>
+          <span data-label="uptime"></span><strong id="uptime">—</strong
+          ><small id="version">—</small>
+        </article>
+        <article>
+          <span data-label="memory"></span><strong id="memory">—</strong
+          ><small data-label="memoryNote"></small>
+        </article>
+      </section>
+      <section class="panel chart">
+        <div class="section-title">
+          <h2 data-label="activity"></h2>
+          <span id="rate">—</span>
+        </div>
+        <canvas
+          id="activity"
+          height="150"
+          aria-label="Request activity"
+        ></canvas>
+      </section>
+      <section class="columns">
+        <article class="panel">
+          <h2 data-label="connection"></h2>
+          <dl>
+            <dt>HTTP</dt>
+            <dd id="http">—</dd>
+            <dt>HTTPS</dt>
+            <dd id="https">—</dd>
+            <dt data-label="auth"></dt>
+            <dd id="auth">—</dd>
+            <dt data-label="networks"></dt>
+            <dd id="networks">—</dd>
+            <dt>DNS</dt>
+            <dd id="dns">—</dd>
+          </dl>
+        </article>
+        <article class="panel">
+          <h2 data-label="policy"></h2>
+          <dl>
+            <dt data-label="cache"></dt>
+            <dd id="cache">—</dd>
+            <dt data-label="domains"></dt>
+            <dd id="domains">—</dd>
+            <dt data-label="private"></dt>
+            <dd id="private">—</dd>
+            <dt data-label="logs"></dt>
+            <dd id="logs">—</dd>
+            <dt>UID</dt>
+            <dd id="uid">—</dd>
+          </dl>
+        </article>
+      </section>
+      <aside>
+        <h2 data-label="setup"></h2>
+        <p id="setup"></p>
+        <p id="notice"></p>
+      </aside>
+      <footer>
+        <span data-label="footer"></span><span id="updated">—</span>
+      </footer>
+    </main>
+  </body>
+</html>

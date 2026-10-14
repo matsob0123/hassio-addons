@@ -1,0 +1,124 @@
+name: Squid Proxy
+version: 1.0.0
+slug: squid_proxy
+description: Secure forward proxy with authenticated access, custom DNS, TLS and an
+  Ingress status panel
+url: https://github.com/matsob0123/hassio-addons/tree/main/squid-proxy
+arch:
+- amd64
+- aarch64
+startup: application
+boot: auto
+init: true
+stage: experimental
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:transit-connection-variant
+panel_title: Squid Proxy
+panel_admin: true
+apparmor: true
+watchdog: http://[HOST]:[PORT:8099]/health
+timeout: 30
+backup: cold
+backup_exclude:
+- cache/**
+map:
+- type: ssl
+  read_only: true
+ports:
+  3128/tcp: 3128
+  3129/tcp: null
+ports_description:
+  3128/tcp: HTTP forward proxy (authentication and source ACL required by default)
+  3129/tcp: Optional TLS connection to the proxy (HTTPS proxy)
+options:
+  enable_http: true
+  enable_https: false
+  auth_enabled: true
+  proxy_user: squidadmin
+  proxy_password: ''
+  additional_users: []
+  allowed_networks:
+  - 192.168.0.0/16
+  denied_networks: []
+  allow_public_clients: false
+  allow_private_destinations: false
+  allowed_domains: []
+  blocked_domains: []
+  dns_servers: []
+  http_safe_ports:
+  - 80
+  - 443
+  https_connect_ports:
+  - 443
+  cache_mode: 'off'
+  cache_mem_mb: 64
+  cache_disk_mb: 512
+  cache_max_object_mb: 16
+  cache_object_memory_kb: 512
+  max_connections_per_client: 64
+  request_body_max_mb: 50
+  connect_timeout_seconds: 15
+  request_timeout_seconds: 60
+  read_timeout_seconds: 120
+  client_lifetime_minutes: 60
+  shutdown_timeout_seconds: 10
+  auth_cache_seconds: 60
+  access_log: false
+  log_client_ips: false
+  log_level: info
+  tls_mode: files
+  certfile: fullchain.pem
+  keyfile: privkey.pem
+  tls_domain: proxy.home.arpa
+  language: pl
+  custom_env: []
+schema:
+  enable_http: bool
+  enable_https: bool
+  auth_enabled: bool
+  proxy_user: match(^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$)
+  proxy_password: password
+  additional_users:
+  - username: match(^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$)
+    password: password
+  allowed_networks:
+  - str
+  denied_networks:
+  - str
+  allow_public_clients: bool
+  allow_private_destinations: bool
+  allowed_domains:
+  - str
+  blocked_domains:
+  - str
+  dns_servers:
+  - str
+  http_safe_ports:
+  - port
+  https_connect_ports:
+  - port
+  cache_mode: list(off|memory|disk)
+  cache_mem_mb: int(8,1024)
+  cache_disk_mb: int(64,32768)
+  cache_max_object_mb: int(1,1024)
+  cache_object_memory_kb: int(1,16384)
+  max_connections_per_client: int(1,1024)
+  request_body_max_mb: int(1,2048)
+  connect_timeout_seconds: int(1,120)
+  request_timeout_seconds: int(5,600)
+  read_timeout_seconds: int(5,1800)
+  client_lifetime_minutes: int(1,1440)
+  shutdown_timeout_seconds: int(1,20)
+  auth_cache_seconds: int(0,3600)
+  access_log: bool
+  log_client_ips: bool
+  log_level: list(info|warning|error)
+  tls_mode: list(files|self_signed)
+  certfile: match(^[A-Za-z0-9_.-]{1,128}$)
+  keyfile: match(^[A-Za-z0-9_.-]{1,128}$)
+  tls_domain: str(1,253)
+  language: list(pl|en)
+  custom_env:
+  - name: match(^[A-Z][A-Z0-9_]{0,63}$)
+    value: password
