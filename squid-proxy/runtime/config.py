@@ -392,7 +392,7 @@ def render(o, run_dir="/run/squid-ha", data_dir="/data"):
         lines += ["http_port 3128 name=plain"]
     if o["enable_https"]:
         lines += [
-            f"https_port 3129 name=secure tls-cert={run_dir}/cert.pem tls-key={run_dir}/key.pem tls-min-version=1.2"
+            f"https_port 3129 name=secure tls-cert={run_dir}/cert.pem tls-key={run_dir}/key.pem options=NO_TLSv1:NO_TLSv1_1"
         ]
     if o["dns_servers"]:
         lines += ["dns_nameservers " + " ".join(o["dns_servers"])]
@@ -411,12 +411,12 @@ def render(o, run_dir="/run/squid-ha", data_dir="/data"):
             "logformat ha %ts.%03tu %tr "
             + ("%>a " if o["log_client_ips"] else "")
             + "%rm %>Hs %<st",
-            "access_log stdio:/dev/stdout ha",
+            f"access_log stdio:{run_dir}/access.fifo ha",
         ]
     else:
         lines += ["access_log none"]
     lines += [
-        "cache_log /dev/stderr",
+        "cache_log /dev/null",
         "cache_store_log none",
         "logfile_rotate 0",
         "debug_options ALL," + ("1" if o["log_level"] == "info" else "0"),

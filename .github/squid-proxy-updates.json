@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "interval_days": 14,
+  "repository": "library/alpine",
+  "tag": "3.24",
+  "platforms": [
+    "amd64",
+    "arm64"
+  ],
+  "github_releases": true
+}

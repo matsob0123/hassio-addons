@@ -20,6 +20,7 @@ RUN ./configure --prefix=/usr --sysconfdir=/etc/squid --localstatedir=/var \
     --enable-http-violations --disable-strict-error-checking --disable-arch-native \
     --without-libcap --without-gnutls \
     && make -j2 && make DESTDIR=/out install
+RUN strip --strip-unneeded /out/usr/sbin/squid /out/usr/lib/squid/basic_ncsa_auth
 
 FROM ${BASE_IMAGE}
 ARG BUILD_VERSION=1.0.0

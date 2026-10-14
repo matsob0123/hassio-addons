@@ -491,7 +491,24 @@ class Suite(unittest.TestCase):
         self.assertEqual(json.loads(data)["userCount"], 2)
         self.assertNotIn(b"MY_TAG", data)
 
-    def test_13_apparmor_denies_a_readable_file_outside_profile(self):
+    def test_13_optional_access_logging_works_without_root_or_url_leak(self):
+        self.start(access_log=True)
+        marker = "private-url-must-not-be-logged"
+        self.assertEqual(self.proxy("/" + marker)[0], 200)
+        for _ in range(30):
+            self.logs.flush()
+            text = (self.tmp / "process.log").read_text()
+            if "[access]" in text and "GET 200" in text:
+                break
+            time.sleep(0.1)
+        self.assertIn("[access]", text)
+        self.assertIn("GET 200", text)
+        self.assertNotIn(marker, text)
+        self.assertNotIn(PASSWORD, text)
+        self.assertNotIn("Cannot open cache_log", text)
+        self.assertEqual((self.run / "access.fifo").stat().st_mode & 0o777, 0o600)
+
+    def test_14_apparmor_denies_a_readable_file_outside_profile(self):
         if os.environ.get("SQUID_HA_TEST_APPARMOR") != "1":
             self.skipTest("AppArmor not enabled for this run")
         probe = Path("/audit-outside-profile")

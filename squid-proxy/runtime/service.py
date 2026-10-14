@@ -7,6 +7,7 @@ import json
 import os
 import pwd
 import re
+import select
 import signal
 import socket
 import ssl
@@ -353,11 +354,63 @@ class Handler(BaseHTTPRequestHandler):
     do_PATCH = do_POST
 
 
+@contextlib.contextmanager
+def access_log_relay(run):
+    """A private FIFO avoids reopening root-owned container stdout after setuid."""
+    fifo = run / "access.fifo"
+    if fifo.exists():
+        if fifo.is_symlink() or not stat.S_ISFIFO(fifo.lstat().st_mode):
+            raise ValueError("Unsafe access log pipe")
+        fifo.unlink()
+    os.mkfifo(fifo, 0o600)
+    fd = os.open(fifo, os.O_RDWR | os.O_NONBLOCK | os.O_NOFOLLOW)
+    stopped = threading.Event()
+
+    def relay():
+        pending = b""
+        while True:
+            readable, _, _ = select.select(
+                [fd], [], [], 0 if stopped.is_set() else 0.25
+            )
+            if readable:
+                pending += os.read(fd, 8192)
+                while b"\n" in pending:
+                    line, pending = pending.split(b"\n", 1)
+                    clean = "".join(
+                        c
+                        for c in line.decode("ascii", "replace")
+                        if 32 <= ord(c) <= 126
+                    )
+                    print("[access] " + clean[:2048], flush=True)
+                if len(pending) > 8192:
+                    pending = b""
+            elif stopped.is_set():
+                break
+
+    thread = threading.Thread(target=relay, daemon=True)
+    thread.start()
+    try:
+        yield
+    finally:
+        stopped.set()
+        thread.join(timeout=2)
+        os.close(fd)
+        fifo.unlink(missing_ok=True)
+
+
 def main():
+    with contextlib.ExitStack() as stack:
+        return run_service(stack)
+
+
+def run_service(stack):
     data = Path(os.environ.get("SQUID_HA_DATA_DIR", "/data"))
     run = Path(os.environ.get("SQUID_HA_RUN_DIR", "/run/squid-ha"))
     o = load(data / "options.json")
     initialize(o, data, run, Path(os.environ.get("SQUID_HA_SSL_DIR", "/ssl")))
+    if o["access_log"]:
+        stack.enter_context(access_log_relay(run))
+    verbosity = "1" if o["log_level"] == "info" else "0"
     conf = str(run / "squid.conf")
     subprocess.run(
         ["/usr/sbin/squid", "-k", "parse", "-f", conf],
@@ -367,10 +420,12 @@ def main():
     )
     if o["cache_mode"] == "disk" and not (data / "cache" / "00").exists():
         subprocess.run(
-            ["/usr/sbin/squid", "-z", "-N", "-f", conf], check=True, timeout=60
+            ["/usr/sbin/squid", "-z", "-N", "-d", verbosity, "-f", conf],
+            check=True,
+            timeout=60,
         )
     child = subprocess.Popen(
-        ["/usr/sbin/squid", "-N", "-f", conf], stdin=subprocess.DEVNULL
+        ["/usr/sbin/squid", "-N", "-d", verbosity, "-f", conf], stdin=subprocess.DEVNULL
     )
     server = None
     stopping = threading.Event()

@@ -39,6 +39,8 @@ profile squid_proxy flags=(attach_disconnected,mediate_deleted) {
   /ssl/** r,
   /tmp/ rw,
   /tmp/** rwk,
+  /dev/shm/ r,
+  /dev/shm/squid-* rwk,
   /dev/null rw,
   /dev/random r,
   /dev/urandom r,

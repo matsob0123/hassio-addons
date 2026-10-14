@@ -25,6 +25,6 @@ Dodaj repozytorium `https://github.com/matsob0123/hassio-addons` w sklepie aplik
 
 Ingress obsługuje panel, a ruch proxy korzysta z osobnych portów. Nie konfiguruj klienta proxy adresem Ingress.
 
-[Pełna konfiguracja](DOCS.md) · [Bezpieczeństwo i pochodzenie](docs/SECURITY.md) · [Testy](docs/TEST_REPORT.md) · [Zmiany](CHANGELOG.md).
+[Pełna konfiguracja](DOCS.md) · [Bezpieczeństwo i pochodzenie](docs/SECURITY.md) · [Testy](docs/TEST_REPORT.md) · [Aktualizacje co 14 dni](docs/UPDATES.md) · [Zmiany](CHANGELOG.md).
 
 Status **experimental** do potwierdzenia na rzeczywistym HA OS/Supervisor. Testy Docker i AppArmor nie zastępują takiej instalacji.

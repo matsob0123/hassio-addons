@@ -9,4 +9,6 @@
 - Fail-closed startup, mandatory control-plane destination protection,
   permanent UID10001 drop and custom AppArmor profile.
 - Native amd64/aarch64 Docker integration and AppArmor regression tests.
+- Fortnightly manifest-verified Alpine updates with version bumps, atomic publication,
+  dry run and 13 updater regression tests; publication requires native validation.
 - Experimental pending real HA OS/Supervisor acceptance testing.
