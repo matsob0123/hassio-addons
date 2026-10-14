@@ -1,0 +1,10 @@
+tests
+docs
+translations
+__pycache__
+*.md
+*.log
+*.png
+*.pyc
+apparmor.txt
+config.yaml

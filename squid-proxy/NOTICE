@@ -1,0 +1,18 @@
+Squid Proxy Home Assistant adaptation
+
+Concept and original Home Assistant integration:
+https://github.com/Nwus9XWK5UTy/homeassistant
+Reviewed commit fcd2e767d6de4475af472f0be955f9365e621d0f.
+Copyright (c) 2026 Nwus9XWK5UTy. MIT license retained in LICENSE.
+The bootstrap, strict configuration renderer, dashboard, AppArmor profile and
+integration tests in this adaptation were implemented for this repository.
+
+Squid 7.7 is a separate GPL-2.0-or-later component, not relicensed under MIT.
+The Dockerfile downloads the complete corresponding upstream source from
+https://github.com/squid-cache/squid/releases/download/SQUID_7_7/squid-7.7.tar.xz
+SHA256 e3bd613b91b1c498ec2992276063342a85cd6edddd5521294e04f44bc055da9b.
+The Dockerfile provides all build instructions; no Squid source patches are applied.
+Squid's COPYING is included at /app/licenses/Squid-COPYING in the image.
+If distributing binaries independently, retain/provide the corresponding source
+and comply with GPL and the licenses of bundled Alpine packages. A URL alone
+is not a substitute for fulfilling the distributor's GPL obligations.

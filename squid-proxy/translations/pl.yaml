@@ -1,0 +1,137 @@
+configuration:
+  enable_http:
+    name: Proxy HTTP
+    description: Nasłuch na 3128. Basic Auth na tym porcie nie szyfruje hasła.
+  enable_https:
+    name: Proxy przez TLS
+    description: 'Nasłuch na 3129: szyfrowane połączenie klient–proxy. Nie jest to
+      MITM stron HTTPS.'
+  auth_enabled:
+    name: Wymagaj logowania
+    description: Domyślnie włączone. Po wyłączeniu nadal obowiązuje ograniczenie sieci
+      źródłowych.
+  proxy_user:
+    name: Główne konto proxy
+    description: '1–64 znaków: litery ASCII, cyfry, kropka, _ lub -.'
+  proxy_password:
+    name: Hasło proxy
+    description: 'Wymagane przy logowaniu: 16–72 bajty UTF-8. Przechowywane jako bcrypt
+      w pliku runtime.'
+  additional_users:
+    name: Dodatkowe konta
+    description: Do 31 kont username/password; nazwy nie mogą się powtarzać.
+    fields:
+      username:
+        name: Użytkownik
+      password:
+        name: Hasło
+  allowed_networks:
+    name: Dozwolone sieci klientów
+    description: Lista CIDR. Domyślnie tylko 192.168.0.0/16. Nigdy nie jest pomijana
+      po poprawnym logowaniu.
+  denied_networks:
+    name: Zablokowane sieci klientów
+    description: Jawne blokady CIDR mają pierwszeństwo przed allowlistą.
+  allow_public_clients:
+    name: Zezwalaj na publiczne źródła
+    description: Wymaga logowania i wyłącznie nasłuchu HTTPS. Domyślnie wyłączone.
+  allow_private_destinations:
+    name: Dostęp do usług LAN
+    description: Dopuszcza prywatne cele. Loopback, link-local i sieć kontrolna Supervisora
+      pozostają zablokowane.
+  allowed_domains:
+    name: Dozwolone domeny
+    description: Pusta lista oznacza brak filtra allow. .example.com lub *.example.com
+      obejmuje poddomeny.
+  blocked_domains:
+    name: Zablokowane domeny
+    description: Denylista domen ma pierwszeństwo przed allowlistą. Bez URL i wyrażeń
+      regularnych.
+  dns_servers:
+    name: DNS dla proxy
+    description: Do 8 adresów IP. Pusta lista używa DNS kontenera. Dotyczy nazw rozwiązywanych
+      przez proxy.
+  http_safe_ports:
+    name: Dozwolone porty celów
+    description: Domyślnie 80 i 443. Niebezpieczne porty usług są odrzucane.
+  https_connect_ports:
+    name: Porty tuneli CONNECT
+    description: Domyślnie 443. Muszą należeć także do http_safe_ports.
+  cache_mode:
+    name: Tryb cache
+    description: 'off: bez cache; memory: RAM; disk: RAM i /data/cache. HTTPS CONNECT
+      nie jest cacheowany.'
+  cache_mem_mb:
+    name: RAM cache (MiB)
+    description: 8–1024 MiB; obowiązuje w trybie memory i disk.
+  cache_disk_mb:
+    name: Rozmiar cache dyskowego (MiB)
+    description: 64–32768 MiB; cache wyłączony z kopii HA.
+  cache_max_object_mb:
+    name: Limit obiektu cache (MiB)
+    description: 1–1024 MiB, nie więcej niż cache dyskowy.
+  cache_object_memory_kb:
+    name: Limit obiektu w RAM (KiB)
+    description: 1–16384 KiB, nie więcej niż przydzielona pamięć cache.
+  max_connections_per_client:
+    name: Limit połączeń na klienta
+    description: 1–1024 jednoczesnych połączeń na źródłowy adres IP.
+  request_body_max_mb:
+    name: Limit wysyłania (MiB)
+    description: 1–2048 MiB na ciało żądania HTTP.
+  connect_timeout_seconds:
+    name: Limit łączenia (s)
+    description: 1–120 sekund na połączenie do celu.
+  request_timeout_seconds:
+    name: Limit żądania (s)
+    description: 5–600 sekund na otrzymanie żądania.
+  read_timeout_seconds:
+    name: Limit bezczynności (s)
+    description: 5–1800 sekund bez danych od celu.
+  client_lifetime_minutes:
+    name: Czas życia klienta (min)
+    description: 1–1440 minut; dotyczy także długich tuneli.
+  shutdown_timeout_seconds:
+    name: Czas zamykania (s)
+    description: 1–20 sekund na zakończenie aktywnych żądań.
+  auth_cache_seconds:
+    name: Pamięć poprawnego logowania (s)
+    description: 0–3600 sekund; restart unieważnia cache.
+  access_log:
+    name: Logowanie dostępu
+    description: 'Domyślnie wyłączone. Po włączeniu: czas, metoda, status, bajty;
+      bez URL i kont.'
+  log_client_ips:
+    name: Adresy IP w logach
+    description: Dodaje adres klienta tylko przy włączonym access_log.
+  log_level:
+    name: Poziom logów usługi
+    description: info lub minimalne komunikaty warning/error; nigdy pełny dump konfiguracji.
+  tls_mode:
+    name: Źródło certyfikatu TLS
+    description: 'files: PEM z /ssl; self_signed: lokalny certyfikat na 365 dni, do
+      samodzielnego zaufania.'
+  certfile:
+    name: Plik certyfikatu
+    description: Zwykły plik PEM w /ssl, bez ścieżek i symlinków.
+  keyfile:
+    name: Plik klucza
+    description: Zwykły plik klucza w /ssl; kopiowany do prywatnego katalogu runtime.
+  tls_domain:
+    name: Nazwa hosta TLS
+    description: Nazwa DNS w certyfikacie self-signed, np. proxy.home.arpa.
+  language:
+    name: Język panelu
+    description: Polski lub angielski; komunikaty Squida pozostają angielskie.
+  custom_env:
+    name: Własne zmienne środowiskowe
+    description: Do 32 par name/value. Zmienne sterujące Pythonem, loaderem, HA i
+      Squidem są chronione.
+    fields:
+      name:
+        name: Nazwa
+      value:
+        name: Wartość
+network:
+  3128/tcp: Proxy HTTP
+  3129/tcp: Proxy TLS / HTTPS
