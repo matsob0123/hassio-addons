@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 — 2026-10-29
+
+- Automated rebuild: `alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a`.
+- Linux amd64/arm64 manifests verified; native runtime, AppArmor and OS vulnerability scan tested before publication.
+
 ## 1.0.0
 
 - Initial hardened adaptation using verified Squid 7.7 source and Alpine 3.24.

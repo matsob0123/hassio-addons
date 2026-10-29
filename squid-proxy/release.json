@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "base_image": "alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6",
+  "version": "1.0.1",
+  "base_image": "alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a",
   "squid_version": "7.7",
   "squid_source": "https://github.com/squid-cache/squid/releases/download/SQUID_7_7/squid-7.7.tar.xz",
   "squid_sha256": "e3bd613b91b1c498ec2992276063342a85cd6edddd5521294e04f44bc055da9b",

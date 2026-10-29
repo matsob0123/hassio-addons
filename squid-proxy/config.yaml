@@ -1,5 +1,5 @@
 name: Squid Proxy
-version: 1.0.0
+version: 1.0.1
 slug: squid_proxy
 description: Secure forward proxy with authenticated access, custom DNS, TLS and an
   Ingress status panel

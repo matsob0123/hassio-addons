@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG BASE_IMAGE=alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
+ARG BASE_IMAGE=alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
 FROM ${BASE_IMAGE} AS build
 ARG SQUID_VERSION=7.7
 ARG SQUID_SHA256=e3bd613b91b1c498ec2992276063342a85cd6edddd5521294e04f44bc055da9b
@@ -23,7 +23,7 @@ RUN ./configure --prefix=/usr --sysconfdir=/etc/squid --localstatedir=/var \
 RUN strip --strip-unneeded /out/usr/sbin/squid /out/usr/lib/squid/basic_ncsa_auth
 
 FROM ${BASE_IMAGE}
-ARG BUILD_VERSION=1.0.0
+ARG BUILD_VERSION=1.0.1
 ARG BUILD_ARCH=amd64
 RUN apk upgrade --no-cache \
     && apk add --no-cache --upgrade python3 apache2-utils openssl libstdc++ libltdl tzdata \
