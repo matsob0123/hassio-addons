@@ -1,1 +1,0 @@
-# This dosen`t work but you can use it as an example to make it for yourself as i got mad and threw it out.

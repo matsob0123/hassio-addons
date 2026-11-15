@@ -1,8 +1,0 @@
-#!/usr/bin/execlineb -P
-##
-## /etc/services.d/makemkv/run
-## s6-overlay v3 service definition — starts jlesage's startapp process
-## Ported by matsob0123
-##
-with-contenv
-/startapp.sh
