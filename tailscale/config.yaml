@@ -1,8 +1,8 @@
 name: Tailscale
-version: 0.30.0
+version: 0.30.7
 slug: tailscale
 description: Zero config VPN for building secure networks
-url: https://github.com/matsob0123/hassio-addons/tailscale
+url: https://github.com/matsob0123/hassio-addons/tree/main/tailscale
 ingress: true
 ingress_port: 0
 ingress_stream: true
@@ -12,6 +12,7 @@ arch:
 - aarch64
 - amd64
 init: false
+timeout: 120
 hassio_api: true
 host_network: true
 host_dbus: true
@@ -83,7 +84,7 @@ schema:
   share_on_port: match(^(?:443|8443|10000)$)
   services:
   - name: match(^svc:[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$)
-    target: match(^(?:https?|tcp)://127\.0\.0\.1:([1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$)
+    target: match(^(?:https?|https\+insecure|tcp)://127\.0\.0\.1:([1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$)
     protocol: list(http|https|tcp|tls-terminated-tcp)
     port: port
     path: match(^/.*$)?
